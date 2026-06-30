@@ -158,6 +158,12 @@
   }
   .ranking-tab.active { color: var(--yellow); border-bottom-color: var(--yellow); }
 
+  /* ── BOUTON FOLLOW SVG ── */
+  .follow-icon-btn { display:flex; align-items:center; justify-content:center; }
+  .follow-icon-btn svg { pointer-events:none; }
+  #follow-btn { display:flex; align-items:center; justify-content:center; gap:8px; }
+  #follow-btn svg { width:18px; height:18px; flex-shrink:0; }
+
   /* ── DATE POST ── */
   .post-date { font-size: 11px; color: var(--grey2); position: absolute; top: 12px; right: 14px; font-family: 'Inter', sans-serif; }
 
@@ -630,7 +636,7 @@
           <div class="stat-label">Score</div>
         </div>
       </div>
-      <button class="btn btn-primary w-full mt-12" id="follow-btn" onclick="toggleFollow()">+ Suivre</button>
+      <button class="btn btn-primary w-full mt-12" id="follow-btn" onclick="toggleFollow()" style="display:flex;align-items:center;justify-content:center;gap:8px;"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M2 20c0-4 3.6-7 8-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M17 14v6M14 17h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg> Suivre</button>
     </div>
     <div class="profile-scores">
       <div class="section-title">Son style</div>
@@ -1123,7 +1129,7 @@ async function loadRanking() {
           border-radius:8px; width:32px; height:32px; flex-shrink:0; cursor:pointer;
           color:${isFollowing ? yellow : textColor};
           font-size:16px; font-weight:700; transition:all .15s; display:flex; align-items:center; justify-content:center;
-        " title="${isFollowing ? 'Abonné' : 'Suivre'}">${isFollowing ? '✓' : '+'}</button>` : ''}
+        " title="${isFollowing ? 'Abonné' : 'Suivre'}">${isFollowing ? `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M2 20c0-4 3.6-7 8-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="18" cy="17" r="4.5" fill="currentColor" opacity=".15"/><path d="M15.5 17l1.5 1.5 2.5-2.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>` : `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M2 20c0-4 3.6-7 8-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M17 14v6M14 17h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`}</button>` : ''}
         <button onclick="event.stopPropagation(); shareUserProfile('${u.id}', '${escHtml(u.name || '')}')" style="
           background:none; border:1px solid ${cardBorder}; border-radius:8px; padding:7px 10px;
           color:${greyColor}; cursor:pointer; font-size:16px; flex-shrink:0; transition:all .15s;
@@ -1316,7 +1322,7 @@ window.quickFollow = async function(targetUid, btnEl) {
         updateDoc(meRef, { following: arrayRemove(targetUid) })
       ]);
       btnEl.dataset.following = '0';
-      btnEl.textContent = '+';
+      btnEl.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M2 20c0-4 3.6-7 8-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M17 14v6M14 17h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`;
       btnEl.style.background = 'none';
       btnEl.style.borderColor = border;
       btnEl.style.color = textColor;
@@ -1329,7 +1335,7 @@ window.quickFollow = async function(targetUid, btnEl) {
       ]);
       createFollowNotification(targetUid, currentUser.uid);
       btnEl.dataset.following = '1';
-      btnEl.textContent = '✓';
+      btnEl.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M2 20c0-4 3.6-7 8-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="18" cy="17" r="4.5" fill="currentColor" opacity=".15"/><path d="M15.5 17l1.5 1.5 2.5-2.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
       btnEl.style.background = isLight ? 'rgba(37,99,235,.1)' : 'rgba(245,245,0,.12)';
       btnEl.style.borderColor = yellow;
       btnEl.style.color = yellow;
@@ -1451,7 +1457,9 @@ async function loadPublicProfile(uid) {
   // Bouton follow
   const isFollowing = currentUser && (d.followers || []).includes(currentUser.uid);
   const followBtn = document.getElementById('follow-btn');
-  followBtn.textContent = isFollowing ? '✓ Abonné' : '+ Suivre';
+  followBtn.innerHTML = isFollowing
+    ? `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M2 20c0-4 3.6-7 8-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="18" cy="17" r="4.5" fill="currentColor" opacity=".15"/><path d="M15.5 17l1.5 1.5 2.5-2.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> Abonné`
+    : `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M2 20c0-4 3.6-7 8-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M17 14v6M14 17h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg> Suivre`;
   followBtn.className = isFollowing ? 'btn btn-ghost w-full mt-12' : 'btn btn-primary w-full mt-12';
 
   const postsEl = document.getElementById('pub-posts-list');
