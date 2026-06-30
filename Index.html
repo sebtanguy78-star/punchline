@@ -941,7 +941,7 @@ window.goBack = function() {
   }
 };
 
-function navigateTo(screen, params = {}, push = true) {
+window.navigateTo = function navigateTo(screen, params = {}, push = true) {
   if (push) historyStack.push({ screen, params });
 
   if (screen === 'profile') {
@@ -1185,7 +1185,7 @@ async function loadTopPosts() {
         background:${isMe ? meBg : cardBg};
         border:1px solid ${isMe ? meBorder : cardBorder};
         border-radius:14px; padding:14px 16px; margin-bottom:10px; cursor:pointer;
-      " onclick="navigateTo('share', { postId: '${p.id}' })">
+      " onclick="navToPost('${p.id}')">
         <div style="font-size:20px;width:26px;text-align:center;flex-shrink:0;">
           ${medals[i] || `<span style="color:${greyColor};font-weight:700;font-size:13px">#${i+1}</span>`}
         </div>
@@ -2105,6 +2105,10 @@ async function loadSharePost(postId) {
     });
   });
 }
+
+window.navToPost = function(postId) {
+  navigateTo('share', { postId });
+};
 
 window.navToProfile = function(uid) {
   if (currentUser && uid === currentUser.uid) {
