@@ -441,8 +441,8 @@
   .auth-tab.active { background: var(--yellow); color: #000; }
 
   /* ── SHARE POPUP ── */
-  #screen-share { align-items: center; justify-content: center; padding: 24px 20px; }
-  .share-popup { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 28px 24px; max-width: 400px; width: 100%; }
+  #screen-share { align-items: flex-start; padding: 0 0 80px; overflow-y: auto; }
+  .share-popup { background: var(--card); border-bottom: 1px solid var(--border); padding: 24px 20px 28px; width: 100%; }
   .share-by { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
   .share-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--yellow); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; color: #000; overflow: hidden; }
   .share-username { font-weight: 600; font-size: 15px; }
@@ -952,9 +952,17 @@ window.navigateTo = function navigateTo(screen, params = {}, push = true) {
     loadPublicProfile(params.uid);
   } else if (screen === 'ranking') {
     showScreen('screen-ranking');
-    loadRanking();
+    // Restaurer l'onglet actif (users ou posts)
+    if (currentRankingTab === 'posts') {
+      document.getElementById('tab-users').classList.remove('active');
+      document.getElementById('tab-posts').classList.add('active');
+      loadTopPosts();
+    } else {
+      loadRanking();
+    }
   } else if (screen === 'share') {
     showScreen('screen-share');
+    document.getElementById('screen-share').scrollTop = 0;
     loadSharePost(params.postId);
   }
 }
