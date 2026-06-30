@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
 <title>Punchline</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
 <style>
@@ -21,8 +21,26 @@
     --biz: #00E5A0;
     --danger: #FF4444;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; background: var(--bg); color: var(--white); font-family: 'Inter', sans-serif; }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html {
+    height: 100%; background: #000;
+    touch-action: pan-y;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+  body {
+    height: 100%; background: #000; color: var(--white); font-family: 'Inter', sans-serif;
+    overscroll-behavior: none;
+    -webkit-user-select: none; user-select: none;
+    display: flex; justify-content: center;
+  }
+  input, textarea { -webkit-user-select: text; user-select: text; }
+  #app {
+    width: 100%; max-width: 480px; min-height: 100vh; min-height: 100dvh;
+    background: var(--bg); position: relative;
+    box-shadow: 0 0 60px rgba(0,0,0,.5);
+  }
+
 
   /* ── LAYOUT ── */
   #app { min-height: 100vh; }
@@ -163,11 +181,12 @@
 
   /* ── ADD POST ── */
   .add-post-sheet {
-    position: fixed; bottom: 0; left: 0; right: 0; background: var(--card);
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%) translateY(100%);
+    width: 100%; max-width: 480px; background: var(--card);
     border-top: 1px solid var(--border); border-radius: 20px 20px 0 0;
     padding: 20px; z-index: 200; transform: translateY(100%); transition: transform .3s ease;
   }
-  .add-post-sheet.open { transform: translateY(0); }
+  .add-post-sheet.open { transform: translateX(-50%) translateY(0); }
   .sheet-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 16px; }
   .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 199; display: none; }
   .overlay.active { display: block; }
@@ -193,11 +212,11 @@
   .share-actions { display: flex; gap: 10px; margin-top: 20px; }
 
   /* ── TOAST ── */
-  .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--card2); border: 1px solid var(--border); color: var(--white); padding: 10px 20px; border-radius: 24px; font-size: 14px; opacity: 0; transition: all .3s; z-index: 500; white-space: nowrap; }
+  .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--card2); border: 1px solid var(--border); color: var(--white); padding: 10px 20px; border-radius: 24px; font-size: 14px; opacity: 0; transition: all .3s; z-index: 500; white-space: nowrap; max-width: 90vw; }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
   /* ── BOTTOM NAV ── */
-  .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 10px 0 20px; z-index: 100; }
+  .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: var(--bg); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 10px 0 20px; z-index: 100; }
   .nav-btn { display: flex; flex-direction: column; align-items: center; gap: 3px; background: none; border: none; color: var(--grey); cursor: pointer; padding: 6px 20px; font-size: 10px; font-family: 'Inter', sans-serif; transition: color .15s; }
   .nav-btn.active, .nav-btn:hover { color: var(--yellow); }
   .nav-btn svg { width: 22px; height: 22px; }
@@ -247,6 +266,22 @@
         Continuer avec Google
       </button>
       <p id="auth-error" class="text-sm mt-8" style="color:var(--danger);display:none;"></p>
+    </div>
+  </div>
+
+  <!-- ══ SCREEN PSEUDO (première connexion) ══ -->
+  <div id="screen-pseudo" class="screen">
+    <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;">
+      <div class="auth-card" style="max-width:380px;">
+        <div class="auth-logo" style="font-size:36px;margin-bottom:4px;">🎤</div>
+        <p style="font-weight:700;font-size:18px;margin-bottom:4px;">Choisis ton pseudo</p>
+        <p class="text-sm text-grey" style="margin-bottom:20px;">Unique, sans espaces. C'est ton identité Punchline.</p>
+        <div class="form-group">
+          <input type="text" id="pseudo-input" placeholder="MaximeL" maxlength="20" oninput="checkPseudoAvailability()"/>
+          <div class="text-sm mt-8" id="pseudo-status" style="display:none;"></div>
+        </div>
+        <button class="btn btn-primary w-full" id="pseudo-submit-btn" onclick="submitPseudo()" disabled>Confirmer</button>
+      </div>
     </div>
   </div>
 
@@ -438,7 +473,7 @@ import {
 import {
   getFirestore, doc, setDoc, getDoc, collection, addDoc, getDocs, deleteDoc,
   updateDoc, increment, arrayUnion, arrayRemove, query, orderBy, where,
-  serverTimestamp, onSnapshot
+  serverTimestamp, onSnapshot, deleteField
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 // ── FIREBASE CONFIG ── remplace par tes valeurs
@@ -537,7 +572,7 @@ function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   const nav = document.getElementById('bottom-nav');
-  nav.style.display = (id === 'screen-auth') ? 'none' : 'flex';
+  nav.style.display = (id === 'screen-auth' || id === 'screen-pseudo') ? 'none' : 'flex';
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   if (id === 'screen-profile') document.getElementById('nav-profile').classList.add('active');
   if (id === 'screen-ranking') document.getElementById('nav-ranking').classList.add('active');
@@ -581,25 +616,89 @@ function hideAuthError() { document.getElementById('auth-error').style.display =
 window.doGoogleLogin = async function() {
   hideAuthError();
   try {
-    const cred = await signInWithPopup(auth, googleProvider);
-    const userRef = doc(db, 'users', cred.user.uid);
-    const snap = await getDoc(userRef);
-    if (!snap.exists()) {
-      // Première connexion : créer le profil
-      await setDoc(userRef, {
-        name: cred.user.displayName || 'Punchlineur',
-        email: cred.user.email,
-        photoURL: cred.user.photoURL || null,
-        score: 0, totalLikes: 0, postCount: 0,
-        followers: [], following: [],
-        cats: initUserCats(),
-        createdAt: serverTimestamp()
-      });
-    }
+    await signInWithPopup(auth, googleProvider);
+    // La suite (création de profil / choix pseudo) est gérée par onAuthStateChanged
   } catch (e) {
     if (e.code !== 'auth/popup-closed-by-user') {
       showAuthError('Erreur de connexion : ' + e.message);
     }
+  }
+};
+
+// ══ PSEUDO UNIQUE (première connexion) ══
+let pendingGoogleUser = null;
+let pseudoCheckTimeout = null;
+
+window.checkPseudoAvailability = function() {
+  const input  = document.getElementById('pseudo-input');
+  const status = document.getElementById('pseudo-status');
+  const btn    = document.getElementById('pseudo-submit-btn');
+  const raw    = input.value.trim();
+  const clean  = raw.replace(/\s+/g, '');
+  if (raw !== clean) input.value = clean;
+
+  btn.disabled = true;
+  if (clean.length < 3) {
+    status.style.display = 'block';
+    status.style.color = 'var(--grey)';
+    status.textContent = 'Minimum 3 caractères.';
+    return;
+  }
+  if (!/^[a-zA-Z0-9_]+$/.test(clean)) {
+    status.style.display = 'block';
+    status.style.color = 'var(--danger)';
+    status.textContent = 'Lettres, chiffres et _ uniquement.';
+    return;
+  }
+
+  status.style.display = 'block';
+  status.style.color = 'var(--grey)';
+  status.textContent = 'Vérification...';
+
+  clearTimeout(pseudoCheckTimeout);
+  pseudoCheckTimeout = setTimeout(async () => {
+    const q = query(collection(db, 'users'), where('nameLower', '==', clean.toLowerCase()));
+    const snap = await getDocs(q);
+    if (snap.empty) {
+      status.style.color = '#00E5A0';
+      status.textContent = '✓ Pseudo disponible';
+      btn.disabled = false;
+    } else {
+      status.style.color = 'var(--danger)';
+      status.textContent = '✗ Pseudo déjà pris';
+      btn.disabled = true;
+    }
+  }, 400);
+};
+
+window.submitPseudo = async function() {
+  const input = document.getElementById('pseudo-input');
+  const name  = input.value.trim();
+  if (!name || !pendingGoogleUser) return;
+
+  const btn = document.getElementById('pseudo-submit-btn');
+  btn.disabled = true; btn.textContent = 'Création...';
+
+  try {
+    const userRef = doc(db, 'users', pendingGoogleUser.uid);
+    await setDoc(userRef, {
+      name,
+      nameLower: name.toLowerCase(),
+      email: pendingGoogleUser.email,
+      photoURL: pendingGoogleUser.photoURL || null,
+      score: 0, totalLikes: 0, postCount: 0,
+      followers: [], following: [],
+      cats: initUserCats(),
+      createdAt: serverTimestamp()
+    });
+    pendingGoogleUser = null;
+    const snap = await getDoc(userRef);
+    currentUserData = snap.exists() ? snap.data() : {};
+    historyStack = [];
+    navigateTo('profile', {});
+  } catch (e) {
+    toast('Erreur : ' + e.message);
+    btn.disabled = false; btn.textContent = 'Confirmer';
   }
 };
 
@@ -655,6 +754,13 @@ async function loadRanking() {
           <div style="font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:22px;color:#F5F500;">${u.score || 0}</div>
           <div style="font-size:11px;color:#888;">pts</div>
         </div>
+        ${(!isMe && currentUser) ? `<button onclick="event.stopPropagation(); quickFollow('${u.id}', this)" data-following="${(u.followers || []).includes(currentUser.uid) ? '1' : '0'}" style="
+          background:${(u.followers || []).includes(currentUser.uid) ? 'rgba(245,245,0,.12)' : 'none'};
+          border:1px solid ${(u.followers || []).includes(currentUser.uid) ? '#F5F500' : '#2A2A2A'};
+          border-radius:8px; width:32px; height:32px; flex-shrink:0; cursor:pointer;
+          color:${(u.followers || []).includes(currentUser.uid) ? '#F5F500' : '#fff'};
+          font-size:16px; font-weight:700; transition:all .15s; display:flex; align-items:center; justify-content:center;
+        " title="${(u.followers || []).includes(currentUser.uid) ? 'Abonné' : 'Suivre'}">${(u.followers || []).includes(currentUser.uid) ? '✓' : '+'}</button>` : ''}
         <button onclick="event.stopPropagation(); shareUserProfile('${u.id}', '${escHtml(u.name || '')}')" style="
           background:none; border:1px solid #2A2A2A; border-radius:8px; padding:7px 10px;
           color:#888; cursor:pointer; font-size:16px; flex-shrink:0; transition:all .15s;
@@ -665,6 +771,41 @@ async function loadRanking() {
     container.innerHTML = '<div class="empty-state"><p>Erreur de chargement.</p></div>';
   }
 }
+
+window.quickFollow = async function(targetUid, btnEl) {
+  if (!currentUser) return toast('Connecte-toi pour suivre.');
+  if (currentUser.uid === targetUid) return;
+
+  const isFollowing = btnEl.dataset.following === '1';
+  const targetRef = doc(db, 'users', targetUid);
+  const meRef     = doc(db, 'users', currentUser.uid);
+
+  try {
+    if (isFollowing) {
+      await updateDoc(targetRef, { followers: arrayRemove(currentUser.uid) });
+      await updateDoc(meRef, { following: arrayRemove(targetUid) });
+      btnEl.dataset.following = '0';
+      btnEl.textContent = '+';
+      btnEl.style.background = 'none';
+      btnEl.style.borderColor = '#2A2A2A';
+      btnEl.style.color = '#fff';
+      btnEl.title = 'Suivre';
+      toast('Abonnement retiré.');
+    } else {
+      await updateDoc(targetRef, { followers: arrayUnion(currentUser.uid) });
+      await updateDoc(meRef, { following: arrayUnion(targetUid) });
+      btnEl.dataset.following = '1';
+      btnEl.textContent = '✓';
+      btnEl.style.background = 'rgba(245,245,0,.12)';
+      btnEl.style.borderColor = '#F5F500';
+      btnEl.style.color = '#F5F500';
+      btnEl.title = 'Abonné';
+      toast('✓ Abonné !');
+    }
+  } catch (e) {
+    toast('Erreur : ' + e.message);
+  }
+};
 
 window.shareUserProfile = function(uid, name) {
   const url = `${location.origin}${location.pathname}#profile/${uid}`;
@@ -682,7 +823,16 @@ onAuthStateChanged(auth, async user => {
     currentUser = user;
     window.currentUserUid = user.uid;
     const snap = await getDoc(doc(db, 'users', user.uid));
-    currentUserData = snap.exists() ? snap.data() : {};
+    if (!snap.exists()) {
+      // Première connexion : demander un pseudo unique avant de continuer
+      pendingGoogleUser = user;
+      showScreen('screen-pseudo');
+      const suggested = (user.displayName || '').replace(/\s+/g, '');
+      document.getElementById('pseudo-input').value = suggested.slice(0, 20);
+      checkPseudoAvailability();
+      return;
+    }
+    currentUserData = snap.data();
     historyStack = [];
     navigateTo('profile', {});
   } else {
@@ -1006,7 +1156,7 @@ async function voteCat(postId, cat, ownerUid) {
   if (prevVote === cat) {
     // remove vote
     updates[`cats.${cat}`]                    = increment(-1);
-    updates[`catVotes.${currentUser.uid}`]    = null; // will delete field
+    updates[`catVotes.${currentUser.uid}`]    = deleteField();
     updates.score                             = increment(-1);
     await updateDoc(postRef, updates);
     await updateDoc(doc(db, 'users', ownerUid), { [`cats.${cat}`]: increment(-1), score: increment(-1) });
