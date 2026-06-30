@@ -30,7 +30,7 @@
     --danger: #FF4444;
   }
   /* ── THEME JOUR ── */
-  body.light {
+  body.light, html.light {
     --bg: #F7F7F2;
     --card: #FFFFFF;
     --card2: #EFEFEA;
@@ -80,6 +80,36 @@
   body.light .search-result-avatar { background: #2563EB; color: #FFFFFF; }
   body.light .sheet-handle { background: #E0E0D8; }
   body.light .overlay { background: rgba(0,0,0,.35); }
+  body.light .post-card { background: #FFFFFF; border-color: #E0E0D8; }
+  body.light .post-comment { color: #111111; }
+  body.light .post-score { color: #111111; }
+  body.light .post-score-label { color: #666; }
+  body.light .post-date { color: #999; }
+  body.light .post-video-link { color: #666; border-color: #E0E0D8; }
+  body.light .post-video-link:hover { border-color: #2563EB; color: #2563EB; }
+  body.light .score-bar-label { color: #666; }
+  body.light .score-bar-val { color: #666; }
+  body.light .cat-vote-btn { color: #888; }
+  body.light .section-title { color: #111; }
+  body.light .profile-name { color: #111; }
+  body.light .profile-handle { color: #666; }
+  body.light .profile-bio { color: #555; }
+  body.light .stat-num { color: #111; }
+  body.light .stat-label { color: #666; }
+  body.light .share-popup { background: #FFFFFF; border-color: #E0E0D8; }
+  body.light .share-username { color: #111; }
+  body.light .share-comment-text { color: #111; }
+  body.light .share-score-big { color: #111; }
+  body.light .ig-badge-wrap { border-color: #E0E0D8; }
+  body.light .ig-badge-link { color: #666; }
+  body.light .post-thumb-placeholder { color: #999; }
+  body.light .post-thumb-wrap { background: #EFEFEA; }
+  body.light .empty-state { color: #999; }
+  body.light .modal-title { color: #111; }
+  body.light .notif-item-text { color: #111; }
+  body.light .notif-item-time { color: #888; }
+  body.light .ranking-card { background: #FFFFFF !important; border-color: #E0E0D8 !important; }
+  body.light .loading-text { color: #999; }
 
   /* ── RECHERCHE ── */
   .search-bar-wrap { padding: 10px 20px 0; }
@@ -154,7 +184,6 @@
 
 
   /* ── LAYOUT ── */
-  #app { min-height: 100vh; }
   .screen { display: none; min-height: 100vh; }
   .screen.active { display: flex; flex-direction: column; }
 
@@ -1034,7 +1063,7 @@ window.navToRanking = function() { navigateTo('ranking', {}); };
 // ══ CLASSEMENT ══
 // Utilitaire : lit une variable CSS en runtime (suit le thème actif)
 function cv(varName) {
-  return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+  return getComputedStyle(document.body).getPropertyValue(varName).trim();
 }
 
 async function loadRanking() {
@@ -1130,10 +1159,8 @@ async function loadTopPosts() {
     }
     const uids = [...new Set(posts.map(p => p.uid))];
     const usersMap = {};
-    for (const uid of uids) {
-      const us = await getDoc(doc(db, 'users', uid));
-      if (us.exists()) usersMap[uid] = us.data();
-    }
+    const uSnaps = await Promise.all(uids.map(uid => getDoc(doc(db, 'users', uid))));
+    uSnaps.forEach(s => { if (s.exists()) usersMap[s.id] = s.data(); });
     const medals = ['🥇','🥈','🥉'];
     const cardBg     = cv('--card');
     const cardBorder = cv('--border');
@@ -1240,6 +1267,7 @@ window.saveBio = async function() {
   const bio = document.getElementById('bio-input').value.trim();
   try {
     await updateDoc(doc(db, 'users', currentUser.uid), { bio });
+    ownProfileDirty = true;
     currentUserData.bio = bio;
     const bioEl = document.getElementById('own-bio');
     if (bio) { bioEl.textContent = '"' + bio + '"'; bioEl.style.display = 'block'; }
@@ -1252,6 +1280,7 @@ window.saveBio = async function() {
 // ══ THÈME JOUR/NUIT ══
 function applyTheme(light) {
   document.body.classList.toggle('light', light);
+  document.documentElement.classList.toggle('light', light);
   try { localStorage.setItem('punchline_theme', light ? 'light' : 'dark'); } catch {}
   const toggle = document.getElementById('toggle-theme');
   if (toggle) toggle.checked = light;
@@ -1282,8 +1311,10 @@ window.quickFollow = async function(targetUid, btnEl) {
 
   try {
     if (isFollowing) {
-      await updateDoc(targetRef, { followers: arrayRemove(currentUser.uid) });
-      await updateDoc(meRef, { following: arrayRemove(targetUid) });
+      await Promise.all([
+        updateDoc(targetRef, { followers: arrayRemove(currentUser.uid) }),
+        updateDoc(meRef, { following: arrayRemove(targetUid) })
+      ]);
       btnEl.dataset.following = '0';
       btnEl.textContent = '+';
       btnEl.style.background = 'none';
@@ -1292,8 +1323,10 @@ window.quickFollow = async function(targetUid, btnEl) {
       btnEl.title = 'Suivre';
       toast('Abonnement retiré.');
     } else {
-      await updateDoc(targetRef, { followers: arrayUnion(currentUser.uid) });
-      await updateDoc(meRef, { following: arrayUnion(targetUid) });
+      await Promise.all([
+        updateDoc(targetRef, { followers: arrayUnion(currentUser.uid) }),
+        updateDoc(meRef, { following: arrayUnion(targetUid) })
+      ]);
       createFollowNotification(targetUid, currentUser.uid);
       btnEl.dataset.following = '1';
       btnEl.textContent = '✓';
@@ -1348,12 +1381,20 @@ onAuthStateChanged(auth, async user => {
 });
 
 // ══ OWN PROFILE ══
-async function loadOwnProfile() {
+let ownProfileDirty = true; // flag : forcer une relecture Firestore si données stale
+async function loadOwnProfile(forceReload = false) {
   if (!currentUser) return;
-  const snap = await getDoc(doc(db, 'users', currentUser.uid));
-  if (!snap.exists()) return;
-  const d = snap.data();
-  currentUserData = d;
+  let d;
+  // Utiliser le cache mémoire si disponible et non invalidé
+  if (!forceReload && !ownProfileDirty && currentUserData && currentUserData.name) {
+    d = currentUserData;
+  } else {
+    const snap = await getDoc(doc(db, 'users', currentUser.uid));
+    if (!snap.exists()) return;
+    d = snap.data();
+    currentUserData = d;
+    ownProfileDirty = false;
+  }
 
   const avatarHtml = avatarInnerHTML(d);
   document.getElementById('own-avatar-btn').innerHTML = avatarHtml;
@@ -1449,6 +1490,7 @@ function startNotifListener() {
     if (count > 0) {
       badge.textContent = count > 9 ? '9+' : String(count);
       badge.style.display = 'flex';
+      notifCache = null; // Invalider le cache si nouvelles notifs
     } else {
       badge.style.display = 'none';
     }
@@ -1468,54 +1510,69 @@ function timeAgo(ts) {
   return `il y a ${days}j`;
 }
 
+// Cache notifications en mémoire (évite relectures Firestore inutiles)
+let notifCache = null;
+let notifUsersCache = {};
+
 window.showNotifications = async function() {
   if (!currentUser) return;
   const modal = document.getElementById('notif-modal');
   const listEl = document.getElementById('notif-list');
-  listEl.innerHTML = '<div class="loading-text"><div class="spinner"></div></div>';
   modal.classList.add('active');
 
+  // Si déjà en cache, afficher immédiatement
+  if (notifCache) {
+    renderNotifList(listEl, notifCache, notifUsersCache);
+    return;
+  }
+
+  listEl.innerHTML = '<div class="loading-text"><div class="spinner"></div></div>';
   try {
     const q = query(collection(db, 'notifications'), where('toUid', '==', currentUser.uid), orderBy('createdAt', 'desc'));
     const snap = await getDocs(q);
     const notifs = [];
     snap.forEach(d => notifs.push({ id: d.id, ...d.data() }));
+    notifCache = notifs;
 
     if (!notifs.length) {
-      listEl.innerHTML = '<div class="empty-state"><div class="emoji">🔔</div><p>Aucune notification pour le moment.</p></div>';
+      listEl.innerHTML = '<div class="empty-state"><p>Aucune notification pour le moment.</p></div>';
       return;
     }
 
-    // Récupère les profils des followers concernés
+    // Récupère les profils en parallèle (Promise.all au lieu de boucle séquentielle)
     const fromUids = [...new Set(notifs.map(n => n.fromUid))];
-    const usersMap = {};
-    for (const uid of fromUids) {
-      const usnap = await getDoc(doc(db, 'users', uid));
-      if (usnap.exists()) usersMap[uid] = usnap.data();
-    }
+    const results = await Promise.all(fromUids.map(uid => getDoc(doc(db, 'users', uid))));
+    results.forEach(s => { if (s.exists()) notifUsersCache[s.id] = s.data(); });
 
-    listEl.innerHTML = notifs.map(n => {
-      const u = usersMap[n.fromUid] || { name: '?' };
-      return `<div class="notif-item ${n.read ? '' : 'unread'}" onclick="closeNotifications(); navToProfile('${n.fromUid}')">
-        <div style="width:36px;height:36px;border-radius:50%;background:#F5F500;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:#000;flex-shrink:0;overflow:hidden;">${avatarInnerHTML(u)}</div>
-        <div class="notif-item-text">
-          <span><strong>${escHtml(u.name || '?')}</strong> a commencé à te suivre</span>
-          <div class="notif-item-time">${timeAgo(n.createdAt)}</div>
-        </div>
-        ${!n.read ? '<div class="notif-dot"></div>' : ''}
-      </div>`;
-    }).join('');
+    renderNotifList(listEl, notifs, notifUsersCache);
 
-    // Marque tout comme lu après affichage
+    // Marque tout comme lu en parallèle (non bloquant)
     const unread = notifs.filter(n => !n.read);
-    for (const n of unread) {
-      updateDoc(doc(db, 'notifications', n.id), { read: true }).catch(() => {});
-    }
+    notifCache = notifCache.map(n => ({ ...n, read: true }));
+    Promise.all(unread.map(n => updateDoc(doc(db, 'notifications', n.id), { read: true }).catch(() => {})));
   } catch (e) {
     console.error('Erreur notifications:', e);
-    listEl.innerHTML = `<div class="empty-state"><p style="color:var(--white);">Erreur de chargement.</p><p style="color:var(--danger);font-size:12px;margin-top:8px;word-break:break-word;">${escHtml(e.code || '')} : ${escHtml(e.message || 'erreur inconnue')}</p></div>`;
+    listEl.innerHTML = `<div class="empty-state"><p>Erreur : ${escHtml(e.message || '')}</p></div>`;
   }
 };
+
+function renderNotifList(listEl, notifs, usersMap) {
+  if (!notifs.length) {
+    listEl.innerHTML = '<div class="empty-state"><p>Aucune notification pour le moment.</p></div>';
+    return;
+  }
+  listEl.innerHTML = notifs.map(n => {
+    const u = usersMap[n.fromUid] || { name: '?' };
+    return `<div class="notif-item ${n.read ? '' : 'unread'}" onclick="closeNotifications(); navToProfile('${n.fromUid}')">
+      <div style="width:36px;height:36px;border-radius:50%;background:var(--yellow);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:var(--bg);flex-shrink:0;overflow:hidden;">${avatarInnerHTML(u)}</div>
+      <div class="notif-item-text">
+        <span><strong>${escHtml(u.name || '?')}</strong> a commencé à te suivre</span>
+        <div class="notif-item-time">${timeAgo(n.createdAt)}</div>
+      </div>
+      ${!n.read ? '<div class="notif-dot"></div>' : ''}
+    </div>`;
+  }).join('');
+}
 
 window.closeNotifications = function() {
   document.getElementById('notif-modal').classList.remove('active');
@@ -1529,17 +1586,23 @@ window.toggleFollow = async function() {
 
   const targetRef = doc(db, 'users', pubProfileUid);
   const meRef     = doc(db, 'users', currentUser.uid);
-  const snap      = await getDoc(targetRef);
-  const isFollowing = snap.exists() && (snap.data().followers || []).includes(currentUser.uid);
+  // Lire l'état depuis currentUserData (déjà en mémoire) plutôt que Firestore
+  const pubSnap = await getDoc(targetRef);
+  const isFollowing = pubSnap.exists() && (pubSnap.data().followers || []).includes(currentUser.uid);
 
   try {
+    // Les 2 updates en parallèle
     if (isFollowing) {
-      await updateDoc(targetRef, { followers: arrayRemove(currentUser.uid) });
-      await updateDoc(meRef, { following: arrayRemove(pubProfileUid) });
+      await Promise.all([
+        updateDoc(targetRef, { followers: arrayRemove(currentUser.uid) }),
+        updateDoc(meRef, { following: arrayRemove(pubProfileUid) })
+      ]);
       toast('Abonnement retiré.');
     } else {
-      await updateDoc(targetRef, { followers: arrayUnion(currentUser.uid) });
-      await updateDoc(meRef, { following: arrayUnion(pubProfileUid) });
+      await Promise.all([
+        updateDoc(targetRef, { followers: arrayUnion(currentUser.uid) }),
+        updateDoc(meRef, { following: arrayUnion(pubProfileUid) })
+      ]);
       createFollowNotification(pubProfileUid, currentUser.uid);
       toast('✓ Abonné !');
     }
@@ -1566,14 +1629,12 @@ window.showFollowingList = async function(uid, type) {
       listEl.innerHTML = `<div class="empty-state"><div class="emoji">👤</div><p>${type === 'followers' ? 'Aucun abonné pour le moment.' : 'Aucun abonnement pour le moment.'}</p></div>`;
       return;
     }
-    const users = [];
-    for (const id of ids) {
-      const usnap = await getDoc(doc(db, 'users', id));
-      if (usnap.exists()) users.push({ id, ...usnap.data() });
-    }
+    // Lectures parallèles (Promise.all) au lieu de séquentielles
+    const snaps = await Promise.all(ids.map(id => getDoc(doc(db, 'users', id))));
+    const users = snaps.filter(s => s.exists()).map(s => ({ id: s.id, ...s.data() }));
     listEl.innerHTML = users.map(u => `
       <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer;" onclick="closeFollowingModal(); navToProfile('${u.id}')">
-        <div style="width:38px;height:38px;border-radius:50%;background:#F5F500;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:#000;flex-shrink:0;overflow:hidden;">${avatarInnerHTML(u)}</div>
+        <div style="width:38px;height:38px;border-radius:50%;background:var(--yellow);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:var(--bg);flex-shrink:0;overflow:hidden;">${avatarInnerHTML(u)}</div>
         <div style="flex:1;min-width:0;">
           <div style="font-weight:600;font-size:14px;">${escHtml(u.name || '?')}</div>
           <div style="font-size:12px;color:var(--grey);">${u.score || 0} pts</div>
@@ -1902,6 +1963,7 @@ window.submitPost = async function() {
       createdAt: serverTimestamp()
     });
     await updateDoc(doc(db, 'users', currentUser.uid), { postCount: increment(1), lastPostAt: Date.now() });
+    ownProfileDirty = true;
     document.getElementById('post-url').value     = '';
     document.getElementById('post-comment').value = '';
     document.getElementById('char-count').textContent = '0 / 280';
@@ -1928,6 +1990,7 @@ window.doDeletePost = async function() {
   try {
     await deleteDoc(doc(db, 'posts', postId));
     await updateDoc(doc(db, 'users', currentUser.uid), { postCount: increment(-1) });
+    ownProfileDirty = true;
     closeDeleteModal();
     toast('🗑️ Punchline supprimée.');
     loadOwnProfile();
@@ -2061,6 +2124,7 @@ window.togglePhotoPref = async function(checked) {
   if (!currentUser) return;
   try {
     await updateDoc(doc(db, 'users', currentUser.uid), { showPhoto: checked });
+    ownProfileDirty = true;
     currentUserData.showPhoto = checked;
     toast(checked ? '📸 Photo Google activée' : 'Photo Google désactivée');
     loadOwnProfile();
