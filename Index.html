@@ -29,6 +29,66 @@
     --biz: #00E5A0;
     --danger: #FF4444;
   }
+  /* ── THEME JOUR ── */
+  body.light {
+    --bg: #F5F5F0; --card: #FFFFFF; --card2: #EAEAE5; --border: #DCDCD7;
+    --white: #111111; --grey: #666; --grey2: #999;
+  }
+  body.light html, body.light { background: #F5F5F0; }
+  body.light #app { box-shadow: 0 0 60px rgba(0,0,0,.08); }
+  body.light .topbar, body.light .bottom-nav { background: #F5F5F0; }
+
+  /* ── RECHERCHE ── */
+  .search-bar-wrap { padding: 10px 20px 0; }
+  .search-bar {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--card2); border: 1px solid var(--border); border-radius: 24px;
+    padding: 9px 14px;
+  }
+  .search-bar svg { width: 16px; height: 16px; color: var(--grey); flex-shrink: 0; }
+  .search-bar input {
+    flex: 1; background: none; border: none; color: var(--white); font-size: 14px;
+    padding: 0; outline: none; border-radius: 0;
+  }
+  .search-bar input::placeholder { color: var(--grey); }
+  .search-results {
+    position: absolute; left: 0; right: 0; top: 100%; z-index: 200;
+    background: var(--card); border: 1px solid var(--border); border-top: none;
+    border-radius: 0 0 12px 12px; max-height: 280px; overflow-y: auto;
+  }
+  .search-result-item {
+    display: flex; align-items: center; gap: 12px; padding: 12px 20px;
+    cursor: pointer; border-bottom: 1px solid var(--border); transition: background .12s;
+  }
+  .search-result-item:last-child { border-bottom: none; }
+  .search-result-item:hover { background: var(--card2); }
+  .search-result-avatar {
+    width: 36px; height: 36px; border-radius: 50%; background: var(--yellow);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 14px; color: #000; flex-shrink: 0; overflow: hidden;
+  }
+  .search-result-name { font-weight: 600; font-size: 14px; }
+  .search-result-score { font-size: 12px; color: var(--grey); margin-top: 1px; }
+  .search-wrap { position: relative; }
+
+  /* ── BIO PROFIL ── */
+  .profile-bio { font-size: 14px; color: var(--grey); margin-top: 10px; line-height: 1.5; font-style: italic; }
+  .bio-edit-btn { font-size: 11px; color: var(--grey); background: none; border: none; cursor: pointer; margin-left: 6px; text-decoration: underline; }
+
+  /* ── ONGLETS RANKING ── */
+  .ranking-tabs { display: flex; border-bottom: 1px solid var(--border); margin: 0; }
+  .ranking-tab {
+    flex: 1; padding: 12px 0; text-align: center; font-size: 13px; font-weight: 600;
+    color: var(--grey); cursor: pointer; border-bottom: 2px solid transparent;
+    transition: all .15s; background: none; border-top: none; border-left: none; border-right: none;
+    font-family: 'Inter', sans-serif;
+  }
+  .ranking-tab.active { color: var(--yellow); border-bottom-color: var(--yellow); }
+
+  /* ── DATE POST ── */
+  .post-date { font-size: 11px; color: var(--grey2); position: absolute; top: 12px; right: 14px; font-family: 'Inter', sans-serif; }
+
+  /* ── TOGGLE LIGHT SWITCH ── */
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   html {
     height: 100%; background: #000;
@@ -422,8 +482,16 @@
 
     <div class="profile-header">
       <div class="profile-avatar" id="own-avatar-big">?</div>
-      <div class="profile-name" id="own-name">—</div>
-      <div class="profile-handle text-grey" id="own-handle">@—</div>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-top:12px;">
+        <div>
+          <div class="profile-name" id="own-name">—</div>
+          <div class="profile-handle text-grey" id="own-handle">@—</div>
+        </div>
+        <div id="own-bio-wrap" style="flex:1;max-width:180px;text-align:right;">
+          <div class="profile-bio" id="own-bio" style="display:none;"></div>
+          <button class="bio-edit-btn" onclick="openBioEdit()">Modifier ma bio</button>
+        </div>
+      </div>
       <div class="profile-stats">
         <div class="stat-item">
           <div class="stat-num" id="own-stat-posts">0</div>
@@ -467,8 +535,15 @@
     </div>
     <div class="profile-header">
       <div class="profile-avatar" id="pub-avatar-big">?</div>
-      <div class="profile-name" id="pub-name">—</div>
-      <div class="profile-handle text-grey" id="pub-handle">@—</div>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-top:12px;">
+        <div>
+          <div class="profile-name" id="pub-name">—</div>
+          <div class="profile-handle text-grey" id="pub-handle">@—</div>
+        </div>
+        <div id="pub-bio-wrap" style="flex:1;max-width:180px;text-align:right;">
+          <div class="profile-bio" id="pub-bio" style="display:none;"></div>
+        </div>
+      </div>
       <div class="profile-stats">
         <div class="stat-item">
           <div class="stat-num" id="pub-stat-posts">0</div>
@@ -566,8 +641,35 @@
     </div>
 
     <div class="hr"></div>
+
+    <div class="toggle-row">
+      <div>
+        <div class="toggle-label">Thème clair</div>
+        <div class="toggle-sub">Basculer entre le mode sombre et le mode jour.</div>
+      </div>
+      <label class="toggle-switch">
+        <input type="checkbox" id="toggle-theme" onchange="toggleTheme(this.checked)"/>
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+
+    <div class="hr"></div>
     <button class="btn btn-danger w-full" onclick="doLogout()">Se déconnecter</button>
     <button class="btn btn-ghost w-full mt-8" onclick="closeSettings()">Fermer</button>
+  </div>
+</div>
+
+<!-- ══ BIO EDIT MODAL ══ -->
+<div class="modal" id="bio-modal">
+  <div class="modal-box">
+    <div class="modal-title">Ma bio</div>
+    <div class="form-group">
+      <label>Quelques mots sur toi (max 120 caractères)</label>
+      <textarea id="bio-input" maxlength="120" placeholder="Ex: Fan de stand-up et de trolls constructifs..."></textarea>
+      <div class="text-sm text-grey mt-4" id="bio-char-count">0 / 120</div>
+    </div>
+    <button class="btn btn-primary w-full" onclick="saveBio()">Enregistrer</button>
+    <button class="btn btn-ghost w-full mt-8" onclick="closeBioEdit()">Annuler</button>
   </div>
 </div>
 
@@ -933,6 +1035,156 @@ async function loadRanking() {
   }
 }
 
+// ══ ONGLETS CLASSEMENT ══
+let currentRankingTab = 'users';
+window.switchRankingTab = function(tab) {
+  currentRankingTab = tab;
+  document.getElementById('tab-users').classList.toggle('active', tab === 'users');
+  document.getElementById('tab-posts').classList.toggle('active', tab === 'posts');
+  if (tab === 'users') loadRanking();
+  else loadTopPosts();
+};
+
+async function loadTopPosts() {
+  const container = document.getElementById('ranking-list');
+  container.innerHTML = '<div class="loading-text"><div class="spinner"></div></div>';
+  try {
+    const q = query(collection(db, 'posts'), orderBy('score', 'desc'));
+    const snap = await getDocs(q);
+    const posts = [];
+    snap.forEach(d => posts.push({ id: d.id, ...d.data() }));
+    if (!posts.length) {
+      container.innerHTML = '<div class="empty-state"><div class="emoji">🎤</div><p>Aucun post encore.</p></div>';
+      return;
+    }
+    // Récupérer les noms des auteurs
+    const uids = [...new Set(posts.map(p => p.uid))];
+    const usersMap = {};
+    for (const uid of uids) {
+      const us = await getDoc(doc(db, 'users', uid));
+      if (us.exists()) usersMap[uid] = us.data();
+    }
+    const medals = ['🥇','🥈','🥉'];
+    container.innerHTML = posts.map((p, i) => {
+      const u = usersMap[p.uid] || { name: '?' };
+      const isMe = currentUser && p.uid === currentUser.uid;
+      const dom = getDominantCat(p.cats || {});
+      return `<div style="
+        display:flex; align-items:center; gap:12px;
+        background:${isMe ? 'rgba(245,245,0,.06)' : '#141414'};
+        border:1px solid ${isMe ? 'rgba(245,245,0,.25)' : '#2A2A2A'};
+        border-radius:14px; padding:14px 16px; margin-bottom:10px; cursor:pointer;
+      " onclick="navToProfile('${p.uid}')">
+        <div style="font-size:20px;width:26px;text-align:center;flex-shrink:0;">
+          ${medals[i] || `<span style="color:#555;font-weight:700;font-size:13px">#${i+1}</span>`}
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:500;color:#888;margin-bottom:4px;">
+            ${escHtml(u.name || '?')}
+            <span style="background:${CATS[dom].color}22;color:${CATS[dom].color};padding:1px 7px;border-radius:10px;font-size:11px;margin-left:4px;">${CATS[dom].label.split(' ')[0]}</span>
+          </div>
+          <div style="font-size:15px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff;">
+            "${escHtml((p.comment || '').slice(0, 60))}${p.comment && p.comment.length > 60 ? '…' : ''}"
+          </div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <div style="font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:20px;color:#F5F500;">${p.score || 0}</div>
+          <div style="font-size:10px;color:#888;">pts</div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    container.innerHTML = `<div class="empty-state"><p>Erreur de chargement.<br><small style="color:var(--danger)">${escHtml(e.message)}</small></p></div>`;
+  }
+}
+
+// ══ RECHERCHE DE PSEUDO ══
+let searchTimeout = null;
+window.handleSearch = function() {
+  const q = document.getElementById('search-input').value.trim().toLowerCase();
+  const results = document.getElementById('search-results');
+  clearTimeout(searchTimeout);
+  if (!q || q.length < 2) { results.style.display = 'none'; return; }
+  searchTimeout = setTimeout(async () => {
+    results.style.display = 'block';
+    results.innerHTML = '<div style="padding:12px 20px;color:var(--grey);font-size:13px;">Recherche...</div>';
+    try {
+      const snap = await getDocs(query(collection(db, 'users'), orderBy('nameLower'), where('nameLower', '>=', q), where('nameLower', '<', q + '')));
+      const users = [];
+      snap.forEach(d => users.push({ id: d.id, ...d.data() }));
+      if (!users.length) {
+        results.innerHTML = '<div style="padding:12px 20px;color:var(--grey);font-size:13px;">Aucun résultat.</div>';
+        return;
+      }
+      results.innerHTML = users.slice(0, 8).map(u => `
+        <div class="search-result-item" onclick="closeSearch(); navToProfile('${u.id}')">
+          <div class="search-result-avatar">${avatarInnerHTML(u)}</div>
+          <div>
+            <div class="search-result-name">${escHtml(u.name || '?')}</div>
+            <div class="search-result-score">${u.score || 0} pts</div>
+          </div>
+        </div>
+      `).join('');
+    } catch(e) {
+      results.innerHTML = '<div style="padding:12px 20px;color:var(--grey);font-size:13px;">Erreur.</div>';
+    }
+  }, 350);
+};
+window.closeSearch = function() {
+  const el = document.getElementById('search-results');
+  const input = document.getElementById('search-input');
+  if (el) el.style.display = 'none';
+  if (input) input.value = '';
+};
+document.addEventListener('click', e => {
+  const wrap = document.querySelector('.search-wrap');
+  if (wrap && !wrap.contains(e.target)) closeSearch();
+});
+
+// ══ BIO ══
+window.openBioEdit = function() {
+  const bioModal = document.getElementById('bio-modal');
+  const bioInput = document.getElementById('bio-input');
+  const bio = currentUserData && currentUserData.bio || '';
+  bioInput.value = bio;
+  document.getElementById('bio-char-count').textContent = bio.length + ' / 120';
+  bioInput.oninput = function() {
+    document.getElementById('bio-char-count').textContent = this.value.length + ' / 120';
+  };
+  bioModal.classList.add('active');
+};
+window.closeBioEdit = function() {
+  document.getElementById('bio-modal').classList.remove('active');
+};
+// listener bio-input géré directement dans openBioEdit
+window.saveBio = async function() {
+  if (!currentUser) return;
+  const bio = document.getElementById('bio-input').value.trim();
+  try {
+    await updateDoc(doc(db, 'users', currentUser.uid), { bio });
+    currentUserData.bio = bio;
+    const bioEl = document.getElementById('own-bio');
+    if (bio) { bioEl.textContent = '"' + bio + '"'; bioEl.style.display = 'block'; }
+    else bioEl.style.display = 'none';
+    closeBioEdit();
+    toast('Bio enregistrée !');
+  } catch(e) { toast('Erreur : ' + e.message); }
+};
+
+// ══ THÈME JOUR/NUIT ══
+function applyTheme(light) {
+  document.body.classList.toggle('light', light);
+  try { localStorage.setItem('punchline_theme', light ? 'light' : 'dark'); } catch {}
+  const toggle = document.getElementById('toggle-theme');
+  if (toggle) toggle.checked = light;
+}
+window.toggleTheme = function(checked) { applyTheme(checked); };
+// Appliquer le thème sauvegardé au chargement
+try {
+  const saved = localStorage.getItem('punchline_theme');
+  if (saved === 'light') applyTheme(true);
+} catch {}
+
 window.quickFollow = async function(targetUid, btnEl) {
   if (!currentUser) return toast('Connecte-toi pour suivre.');
   if (currentUser.uid === targetUid) return;
@@ -1028,6 +1280,13 @@ async function loadOwnProfile() {
   document.getElementById('own-level-badge').innerHTML = renderLevelBadge(d.score || 0, d.cats || {});
   document.getElementById('own-score-bars').innerHTML  = renderScoreBars(d.cats || {}, d.score || 0);
   document.getElementById('settings-info').textContent = d.email || '';
+  // Bio
+  const ownBioEl = document.getElementById('own-bio');
+  if (d.bio) { ownBioEl.textContent = '"' + d.bio + '"'; ownBioEl.style.display = 'block'; }
+  else ownBioEl.style.display = 'none';
+  // Thème sauvegardé
+  const toggle = document.getElementById('toggle-theme');
+  if (toggle) toggle.checked = document.body.classList.contains('light');
 
   // posts
   const postsEl = document.getElementById('own-posts-list');
@@ -1056,6 +1315,10 @@ async function loadPublicProfile(uid) {
   document.getElementById('pub-stat-score').textContent = d.score || 0;
   document.getElementById('pub-level-badge').innerHTML = renderLevelBadge(d.score || 0, d.cats || {});
   document.getElementById('pub-score-bars').innerHTML  = renderScoreBars(d.cats || {}, d.score || 0);
+  // Bio
+  const pubBioEl = document.getElementById('pub-bio');
+  if (d.bio) { pubBioEl.textContent = '"' + d.bio + '"'; pubBioEl.style.display = 'block'; }
+  else pubBioEl.style.display = 'none';
 
   // Bouton follow
   const isFollowing = currentUser && (d.followers || []).includes(currentUser.uid);
@@ -1383,7 +1646,15 @@ function renderPostCard(p, isOwn) {
     return `<button class="cat-vote-btn ${k} ${active}" data-catvote="${p.id}" data-cat="${k}" data-owner="${p.uid}" ${isOwn ? 'disabled title="Tu ne peux pas voter pour toi"' : ''}>${c.label}</button>`;
   }).join('');
 
+  // Formater la date
+  let dateStr = '';
+  if (p.createdAt) {
+    const d = p.createdAt.toDate ? p.createdAt.toDate() : new Date(p.createdAt);
+    dateStr = d.toLocaleDateString('fr-FR', { day:'numeric', month:'short', year:'numeric' });
+  }
+
   return `<div class="card post-card">
+    ${dateStr ? `<div class="post-date">${dateStr}</div>` : ''}
     <div class="post-score" id="score-${p.id}">${score}</div>
     <div class="post-score-label">points</div>
     <p class="post-comment">"${escHtml(p.comment || '')}"</p>
