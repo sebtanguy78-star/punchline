@@ -57,6 +57,28 @@
   .logo span { color: var(--white); }
   .topbar-actions { display: flex; gap: 10px; align-items: center; }
   .avatar-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--yellow); border: none; cursor: pointer; font-weight: 800; font-size: 14px; color: #000; overflow: hidden; display: flex; align-items: center; justify-content: center; padding: 0; }
+  .notif-bell-btn {
+    position: relative; width: 36px; height: 36px; border-radius: 50%;
+    background: var(--card2); border: 1px solid var(--border); cursor: pointer;
+    color: var(--white); display: flex; align-items: center; justify-content: center; padding: 0;
+  }
+  .notif-bell-btn svg { width: 18px; height: 18px; }
+  .notif-badge {
+    position: absolute; top: -3px; right: -3px; min-width: 17px; height: 17px;
+    border-radius: 9px; background: var(--danger); color: white; font-size: 10px;
+    font-weight: 700; display: flex; align-items: center; justify-content: center;
+    padding: 0 4px; border: 2px solid var(--bg); font-family: 'Inter', sans-serif;
+  }
+  .notif-item {
+    display: flex; align-items: center; gap: 12px; padding: 10px 0;
+    border-bottom: 1px solid var(--border); cursor: pointer;
+  }
+  .notif-item:last-child { border-bottom: none; }
+  .notif-item.unread { background: rgba(245,245,0,.04); margin: 0 -12px; padding: 10px 12px; border-radius: 8px; }
+  .notif-item-text { flex: 1; font-size: 14px; }
+  .notif-item-text strong { font-weight: 600; }
+  .notif-item-time { font-size: 11px; color: var(--grey); margin-top: 2px; }
+  .notif-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--yellow); flex-shrink: 0; }
 
   /* ── BUTTONS ── */
   .btn { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-family: 'Inter', sans-serif; font-weight: 600; font-size: 14px; transition: all .15s; }
@@ -370,6 +392,10 @@
       <span class="logo">Punch<span>line</span></span>
       <div class="topbar-actions">
         <button class="btn btn-ghost btn-sm" onclick="showAddPost()">+ Punchline</button>
+        <button class="notif-bell-btn" id="notif-bell-btn" onclick="showNotifications()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="notif-badge" id="notif-badge" style="display:none;">0</span>
+        </button>
         <button class="avatar-btn" id="own-avatar-btn" onclick="showSettings()">?</button>
       </div>
     </div>
@@ -490,6 +516,15 @@
     <div class="text-sm text-grey mt-4" id="char-count">0 / 280</div>
   </div>
   <button class="btn btn-primary w-full" onclick="submitPost()">Publier</button>
+</div>
+
+<!-- ══ NOTIFICATIONS MODAL ══ -->
+<div class="modal" id="notif-modal">
+  <div class="modal-box" style="max-height:70vh;overflow-y:auto;">
+    <div class="modal-title">Notifications</div>
+    <div id="notif-list"></div>
+    <button class="btn btn-ghost w-full mt-12" onclick="closeNotifications()">Fermer</button>
+  </div>
 </div>
 
 <!-- ══ SETTINGS MODAL ══ -->
@@ -802,6 +837,7 @@ window.submitPseudo = async function() {
     currentUserData = snap.exists() ? snap.data() : {};
     historyStack = [];
     navigateTo('profile', {});
+    startNotifListener();
   } catch (e) {
     toast('Erreur : ' + e.message);
     btn.disabled = false; btn.textContent = 'Confirmer';
@@ -899,6 +935,7 @@ window.quickFollow = async function(targetUid, btnEl) {
     } else {
       await updateDoc(targetRef, { followers: arrayUnion(currentUser.uid) });
       await updateDoc(meRef, { following: arrayUnion(targetUid) });
+      createFollowNotification(targetUid, currentUser.uid);
       btnEl.dataset.following = '1';
       btnEl.textContent = '✓';
       btnEl.style.background = 'rgba(245,245,0,.12)';
@@ -940,11 +977,13 @@ onAuthStateChanged(auth, async user => {
     currentUserData = snap.data();
     historyStack = [];
     navigateTo('profile', {});
+    startNotifListener();
   } else {
     currentUser = null;
     currentUserData = null;
     window.currentUserUid = null;
     historyStack = [];
+    if (notifUnsub) { notifUnsub(); notifUnsub = null; }
     showScreen('screen-auth');
   }
 });
@@ -1013,6 +1052,104 @@ async function loadPublicProfile(uid) {
   renderPostsList(postsEl, posts, false);
 }
 
+// ══ NOTIFICATIONS ══
+async function createFollowNotification(targetUid, followerUid) {
+  try {
+    await addDoc(collection(db, 'notifications'), {
+      toUid: targetUid,
+      type: 'follow',
+      fromUid: followerUid,
+      read: false,
+      createdAt: serverTimestamp()
+    });
+  } catch (e) {
+    // silencieux : une notif ratée ne doit jamais bloquer le follow lui-même
+  }
+}
+
+let notifUnsub = null;
+function startNotifListener() {
+  if (!currentUser) return;
+  if (notifUnsub) notifUnsub();
+  const q = query(collection(db, 'notifications'), where('toUid', '==', currentUser.uid), where('read', '==', false));
+  notifUnsub = onSnapshot(q, snap => {
+    const count = snap.size;
+    const badge = document.getElementById('notif-badge');
+    if (!badge) return;
+    if (count > 0) {
+      badge.textContent = count > 9 ? '9+' : String(count);
+      badge.style.display = 'flex';
+    } else {
+      badge.style.display = 'none';
+    }
+  });
+}
+
+function timeAgo(ts) {
+  if (!ts) return '';
+  const date = ts.toDate ? ts.toDate() : new Date(ts);
+  const diffMs = Date.now() - date.getTime();
+  const mins = Math.floor(diffMs / 60000);
+  if (mins < 1) return 'à l\'instant';
+  if (mins < 60) return `il y a ${mins} min`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `il y a ${hours}h`;
+  const days = Math.floor(hours / 24);
+  return `il y a ${days}j`;
+}
+
+window.showNotifications = async function() {
+  if (!currentUser) return;
+  const modal = document.getElementById('notif-modal');
+  const listEl = document.getElementById('notif-list');
+  listEl.innerHTML = '<div class="loading-text"><div class="spinner"></div></div>';
+  modal.classList.add('active');
+
+  try {
+    const q = query(collection(db, 'notifications'), where('toUid', '==', currentUser.uid), orderBy('createdAt', 'desc'));
+    const snap = await getDocs(q);
+    const notifs = [];
+    snap.forEach(d => notifs.push({ id: d.id, ...d.data() }));
+
+    if (!notifs.length) {
+      listEl.innerHTML = '<div class="empty-state"><div class="emoji">🔔</div><p>Aucune notification pour le moment.</p></div>';
+      return;
+    }
+
+    // Récupère les profils des followers concernés
+    const fromUids = [...new Set(notifs.map(n => n.fromUid))];
+    const usersMap = {};
+    for (const uid of fromUids) {
+      const usnap = await getDoc(doc(db, 'users', uid));
+      if (usnap.exists()) usersMap[uid] = usnap.data();
+    }
+
+    listEl.innerHTML = notifs.map(n => {
+      const u = usersMap[n.fromUid] || { name: '?' };
+      return `<div class="notif-item ${n.read ? '' : 'unread'}" onclick="closeNotifications(); navToProfile('${n.fromUid}')">
+        <div style="width:36px;height:36px;border-radius:50%;background:#F5F500;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:#000;flex-shrink:0;overflow:hidden;">${avatarInnerHTML(u)}</div>
+        <div class="notif-item-text">
+          <span><strong>${escHtml(u.name || '?')}</strong> a commencé à te suivre</span>
+          <div class="notif-item-time">${timeAgo(n.createdAt)}</div>
+        </div>
+        ${!n.read ? '<div class="notif-dot"></div>' : ''}
+      </div>`;
+    }).join('');
+
+    // Marque tout comme lu après affichage
+    const unread = notifs.filter(n => !n.read);
+    for (const n of unread) {
+      updateDoc(doc(db, 'notifications', n.id), { read: true }).catch(() => {});
+    }
+  } catch (e) {
+    listEl.innerHTML = '<p class="text-sm text-grey">Erreur de chargement.</p>';
+  }
+};
+
+window.closeNotifications = function() {
+  document.getElementById('notif-modal').classList.remove('active');
+};
+
 // ══ FOLLOW SYSTEM ══
 window.toggleFollow = async function() {
   if (!currentUser) return toast('Connecte-toi pour suivre.');
@@ -1032,6 +1169,7 @@ window.toggleFollow = async function() {
     } else {
       await updateDoc(targetRef, { followers: arrayUnion(currentUser.uid) });
       await updateDoc(meRef, { following: arrayUnion(pubProfileUid) });
+      createFollowNotification(pubProfileUid, currentUser.uid);
       toast('✓ Abonné !');
     }
     loadPublicProfile(pubProfileUid);
