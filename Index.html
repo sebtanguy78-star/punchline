@@ -1032,6 +1032,11 @@ window.navToOwnProfile = function() { navigateTo('profile', {}); };
 window.navToRanking = function() { navigateTo('ranking', {}); };
 
 // ══ CLASSEMENT ══
+// Utilitaire : lit une variable CSS en runtime (suit le thème actif)
+function cv(varName) {
+  return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+}
+
 async function loadRanking() {
   const container = document.getElementById('ranking-list');
   container.innerHTML = '<div class="loading-text"><div class="spinner"></div></div>';
@@ -1041,48 +1046,58 @@ async function loadRanking() {
     const users = [];
     snap.forEach(d => users.push({ id: d.id, ...d.data() }));
     if (!users.length) {
-      container.innerHTML = '<div class="empty-state"><div class="emoji">🏆</div><p>Aucun punchlineur encore. Sois le premier !</p></div>';
+      container.innerHTML = '<div class="empty-state"><p>Aucun punchlineur encore. Sois le premier !</p></div>';
       return;
     }
     const medals = ['🥇','🥈','🥉'];
+    const cardBg     = cv('--card');
+    const cardBorder = cv('--border');
+    const textColor  = cv('--white');
+    const greyColor  = cv('--grey');
+    const yellow     = cv('--yellow');
+    const meBg       = document.body.classList.contains('light') ? 'rgba(37,99,235,.06)' : 'rgba(245,245,0,.06)';
+    const meBorder   = document.body.classList.contains('light') ? 'rgba(37,99,235,.35)' : 'rgba(245,245,0,.25)';
+    const meColor    = document.body.classList.contains('light') ? '#2563EB' : '#F5F500';
     container.innerHTML = users.map((u, i) => {
       const dom = getDominantCat(u.cats || {});
       const isMe = currentUser && u.id === currentUser.uid;
-      return `<div style="
+      const isFollowing = (u.followers || []).includes(currentUser && currentUser.uid);
+      return `<div class="ranking-card" style="
         display:flex; align-items:center; gap:14px;
-        background:${isMe ? 'rgba(245,245,0,.06)' : '#141414'};
-        border:1px solid ${isMe ? 'rgba(245,245,0,.25)' : '#2A2A2A'};
+        background:${isMe ? meBg : cardBg};
+        border:1px solid ${isMe ? meBorder : cardBorder};
         border-radius:14px; padding:14px 16px; margin-bottom:10px; cursor:pointer;
       " onclick="navToProfile('${u.id}')">
         <div style="font-size:22px; width:28px; text-align:center; flex-shrink:0;">
-          ${medals[i] || `<span style="color:#555;font-weight:700;font-size:14px">#${i+1}</span>`}
+          ${medals[i] || `<span style="color:${greyColor};font-weight:700;font-size:14px">#${i+1}</span>`}
         </div>
-        <div style="width:42px;height:42px;border-radius:50%;background:#F5F500;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;color:#000;flex-shrink:0;">
+        <div style="width:42px;height:42px;border-radius:50%;background:${yellow};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;color:${document.body.classList.contains('light') ? '#fff' : '#000'};flex-shrink:0;overflow:hidden;">
           ${avatarInnerHTML(u)}
         </div>
         <div style="flex:1; min-width:0;">
-          <div style="font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:6px;">
-            ${hasNewPost(u) ? '<span style="width:8px;height:8px;border-radius:50%;background:#00E5A0;flex-shrink:0;box-shadow:0 0 6px #00E5A0;" title="Nouvelle punchline"></span>' : ''}
-            <span style="overflow:hidden;text-overflow:ellipsis;">${escHtml(u.name || '?')}</span> ${isMe ? '<span style="color:#F5F500;font-size:12px;">• toi</span>' : ''}
+          <div style="font-weight:700;font-size:15px;color:${textColor};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:6px;">
+            ${hasNewPost(u) ? `<span style="width:8px;height:8px;border-radius:50%;background:${meColor};flex-shrink:0;" title="Nouvelle punchline"></span>` : ''}
+            <span style="overflow:hidden;text-overflow:ellipsis;">${escHtml(u.name || '?')}</span>
+            ${isMe ? `<span style="color:${meColor};font-size:12px;">• toi</span>` : ''}
           </div>
           <div style="display:flex;align-items:center;gap:6px;margin-top:3px;">
             <span style="font-size:14px;" title="${CATS[dom].label}">${CATS[dom].label.split(' ')[0]}</span>
           </div>
         </div>
         <div style="text-align:right;flex-shrink:0;">
-          <div style="font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:22px;color:#F5F500;">${u.score || 0}</div>
-          <div style="font-size:11px;color:#888;">pts</div>
+          <div style="font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:22px;color:${yellow};">${u.score || 0}</div>
+          <div style="font-size:11px;color:${greyColor};">pts</div>
         </div>
-        ${(!isMe && currentUser) ? `<button onclick="event.stopPropagation(); quickFollow('${u.id}', this)" data-following="${(u.followers || []).includes(currentUser.uid) ? '1' : '0'}" style="
-          background:${(u.followers || []).includes(currentUser.uid) ? 'rgba(245,245,0,.12)' : 'none'};
-          border:1px solid ${(u.followers || []).includes(currentUser.uid) ? '#F5F500' : '#2A2A2A'};
+        ${(!isMe && currentUser) ? `<button onclick="event.stopPropagation(); quickFollow('${u.id}', this)" data-following="${isFollowing ? '1' : '0'}" style="
+          background:${isFollowing ? (document.body.classList.contains('light') ? 'rgba(37,99,235,.1)' : 'rgba(245,245,0,.12)') : 'none'};
+          border:1px solid ${isFollowing ? yellow : cardBorder};
           border-radius:8px; width:32px; height:32px; flex-shrink:0; cursor:pointer;
-          color:${(u.followers || []).includes(currentUser.uid) ? '#F5F500' : '#fff'};
+          color:${isFollowing ? yellow : textColor};
           font-size:16px; font-weight:700; transition:all .15s; display:flex; align-items:center; justify-content:center;
-        " title="${(u.followers || []).includes(currentUser.uid) ? 'Abonné' : 'Suivre'}">${(u.followers || []).includes(currentUser.uid) ? '✓' : '+'}</button>` : ''}
+        " title="${isFollowing ? 'Abonné' : 'Suivre'}">${isFollowing ? '✓' : '+'}</button>` : ''}
         <button onclick="event.stopPropagation(); shareUserProfile('${u.id}', '${escHtml(u.name || '')}')" style="
-          background:none; border:1px solid #2A2A2A; border-radius:8px; padding:7px 10px;
-          color:#888; cursor:pointer; font-size:16px; flex-shrink:0; transition:all .15s;
+          background:none; border:1px solid ${cardBorder}; border-radius:8px; padding:7px 10px;
+          color:${greyColor}; cursor:pointer; font-size:16px; flex-shrink:0; transition:all .15s;
         " title="Partager le profil">🔗</button>
       </div>`;
     }).join('');
@@ -1110,10 +1125,9 @@ async function loadTopPosts() {
     const posts = [];
     snap.forEach(d => posts.push({ id: d.id, ...d.data() }));
     if (!posts.length) {
-      container.innerHTML = '<div class="empty-state"><div class="emoji">🎤</div><p>Aucun post encore.</p></div>';
+      container.innerHTML = '<div class="empty-state"><p>Aucun post encore.</p></div>';
       return;
     }
-    // Récupérer les noms des auteurs
     const uids = [...new Set(posts.map(p => p.uid))];
     const usersMap = {};
     for (const uid of uids) {
@@ -1121,31 +1135,39 @@ async function loadTopPosts() {
       if (us.exists()) usersMap[uid] = us.data();
     }
     const medals = ['🥇','🥈','🥉'];
+    const cardBg     = cv('--card');
+    const cardBorder = cv('--border');
+    const textColor  = cv('--white');
+    const greyColor  = cv('--grey');
+    const yellow     = cv('--yellow');
+    const meBg       = document.body.classList.contains('light') ? 'rgba(37,99,235,.06)' : 'rgba(245,245,0,.06)';
+    const meBorder   = document.body.classList.contains('light') ? 'rgba(37,99,235,.35)' : 'rgba(245,245,0,.25)';
     container.innerHTML = posts.map((p, i) => {
       const u = usersMap[p.uid] || { name: '?' };
       const isMe = currentUser && p.uid === currentUser.uid;
       const dom = getDominantCat(p.cats || {});
+      const catColor = CATS[dom].color;
       return `<div style="
         display:flex; align-items:center; gap:12px;
-        background:${isMe ? 'rgba(245,245,0,.06)' : '#141414'};
-        border:1px solid ${isMe ? 'rgba(245,245,0,.25)' : '#2A2A2A'};
+        background:${isMe ? meBg : cardBg};
+        border:1px solid ${isMe ? meBorder : cardBorder};
         border-radius:14px; padding:14px 16px; margin-bottom:10px; cursor:pointer;
       " onclick="navToProfile('${p.uid}')">
         <div style="font-size:20px;width:26px;text-align:center;flex-shrink:0;">
-          ${medals[i] || `<span style="color:#555;font-weight:700;font-size:13px">#${i+1}</span>`}
+          ${medals[i] || `<span style="color:${greyColor};font-weight:700;font-size:13px">#${i+1}</span>`}
         </div>
         <div style="flex:1;min-width:0;">
-          <div style="font-size:13px;font-weight:500;color:#888;margin-bottom:4px;">
-            ${escHtml(u.name || '?')}
-            <span style="background:${CATS[dom].color}22;color:${CATS[dom].color};padding:1px 7px;border-radius:10px;font-size:11px;margin-left:4px;">${CATS[dom].label.split(' ')[0]}</span>
+          <div style="font-size:13px;font-weight:500;color:${greyColor};margin-bottom:5px;display:flex;align-items:center;gap:6px;">
+            <span>${escHtml(u.name || '?')}</span>
+            <span style="background:${catColor}22;color:${catColor};padding:1px 7px;border-radius:10px;font-size:11px;">${CATS[dom].label.split(' ')[0]}</span>
           </div>
-          <div style="font-size:15px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff;">
-            "${escHtml((p.comment || '').slice(0, 60))}${p.comment && p.comment.length > 60 ? '…' : ''}"
+          <div style="font-size:15px;font-weight:600;line-height:1.4;color:${textColor};overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">
+            "${escHtml((p.comment || '').slice(0, 80))}${p.comment && p.comment.length > 80 ? '…' : ''}"
           </div>
         </div>
-        <div style="text-align:right;flex-shrink:0;">
-          <div style="font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:20px;color:#F5F500;">${p.score || 0}</div>
-          <div style="font-size:10px;color:#888;">pts</div>
+        <div style="text-align:right;flex-shrink:0;padding-left:8px;">
+          <div style="font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:20px;color:${yellow};">${p.score || 0}</div>
+          <div style="font-size:10px;color:${greyColor};">pts</div>
         </div>
       </div>`;
     }).join('');
@@ -1233,6 +1255,11 @@ function applyTheme(light) {
   try { localStorage.setItem('punchline_theme', light ? 'light' : 'dark'); } catch {}
   const toggle = document.getElementById('toggle-theme');
   if (toggle) toggle.checked = light;
+  // Recharger le classement si affiché pour mettre à jour les couleurs des cartes
+  if (document.getElementById('screen-ranking').classList.contains('active')) {
+    if (currentRankingTab === 'posts') loadTopPosts();
+    else loadRanking();
+  }
 }
 window.toggleTheme = function(checked) { applyTheme(checked); };
 // Appliquer le thème sauvegardé au chargement
@@ -1248,6 +1275,10 @@ window.quickFollow = async function(targetUid, btnEl) {
   const isFollowing = btnEl.dataset.following === '1';
   const targetRef = doc(db, 'users', targetUid);
   const meRef     = doc(db, 'users', currentUser.uid);
+  const isLight   = document.body.classList.contains('light');
+  const yellow     = cv('--yellow');
+  const border     = cv('--border');
+  const textColor  = cv('--white');
 
   try {
     if (isFollowing) {
@@ -1256,8 +1287,8 @@ window.quickFollow = async function(targetUid, btnEl) {
       btnEl.dataset.following = '0';
       btnEl.textContent = '+';
       btnEl.style.background = 'none';
-      btnEl.style.borderColor = '#2A2A2A';
-      btnEl.style.color = '#fff';
+      btnEl.style.borderColor = border;
+      btnEl.style.color = textColor;
       btnEl.title = 'Suivre';
       toast('Abonnement retiré.');
     } else {
@@ -1266,9 +1297,9 @@ window.quickFollow = async function(targetUid, btnEl) {
       createFollowNotification(targetUid, currentUser.uid);
       btnEl.dataset.following = '1';
       btnEl.textContent = '✓';
-      btnEl.style.background = 'rgba(245,245,0,.12)';
-      btnEl.style.borderColor = '#F5F500';
-      btnEl.style.color = '#F5F500';
+      btnEl.style.background = isLight ? 'rgba(37,99,235,.1)' : 'rgba(245,245,0,.12)';
+      btnEl.style.borderColor = yellow;
+      btnEl.style.color = yellow;
       btnEl.title = 'Abonné';
       toast('✓ Abonné !');
     }
