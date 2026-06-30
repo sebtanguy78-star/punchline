@@ -1142,7 +1142,8 @@ window.showNotifications = async function() {
       updateDoc(doc(db, 'notifications', n.id), { read: true }).catch(() => {});
     }
   } catch (e) {
-    listEl.innerHTML = '<p class="text-sm text-grey">Erreur de chargement.</p>';
+    console.error('Erreur notifications:', e);
+    listEl.innerHTML = `<div class="empty-state"><p style="color:var(--white);">Erreur de chargement.</p><p style="color:var(--danger);font-size:12px;margin-top:8px;word-break:break-word;">${escHtml(e.code || '')} : ${escHtml(e.message || 'erreur inconnue')}</p></div>`;
   }
 };
 
