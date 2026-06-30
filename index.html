@@ -56,7 +56,7 @@
   .logo { font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 22px; color: var(--yellow); letter-spacing: -0.5px; }
   .logo span { color: var(--white); }
   .topbar-actions { display: flex; gap: 10px; align-items: center; }
-  .avatar-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--yellow); border: none; cursor: pointer; font-weight: 800; font-size: 14px; color: #000; }
+  .avatar-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--yellow); border: none; cursor: pointer; font-weight: 800; font-size: 14px; color: #000; overflow: hidden; display: flex; align-items: center; justify-content: center; padding: 0; }
 
   /* ── BUTTONS ── */
   .btn { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-family: 'Inter', sans-serif; font-weight: 600; font-size: 14px; transition: all .15s; }
@@ -106,7 +106,7 @@
     background: var(--card2); border: 1px solid var(--border); border-radius: 8px;
     padding: 6px 12px; font-size: 13px; font-weight: 600;
   }
-  .level-icon { font-size: 18px; }
+
 
   /* ── POST CARD ── */
   .post-card { position: relative; }
@@ -142,6 +142,30 @@
     min-height: 80px;
   }
   .post-thumb-placeholder .thumb-icon { font-size: 32px; }
+  .post-thumb-network-badge {
+    position: absolute; bottom: 8px; right: 8px; width: 26px; height: 26px;
+    border-radius: 7px; display: flex; align-items: center; justify-content: center;
+    background: rgba(0,0,0,.55); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+    border: 1px solid rgba(255,255,255,.15); pointer-events: none;
+  }
+
+  /* ── INSTAGRAM COMPACT BADGE (pas de cadre 16:9) ── */
+  .ig-badge-wrap {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    padding: 16px 0; margin-bottom: 12px;
+  }
+  .ig-badge-icon {
+    width: 48px; height: 48px; border-radius: 14px;
+    background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 14px rgba(214,36,159,.35);
+  }
+  .ig-badge-link {
+    font-size: 13px; color: var(--grey); text-decoration: none;
+    border: 1px solid var(--border); border-radius: 20px; padding: 6px 14px;
+    transition: border-color .15s, color .15s;
+  }
+  .ig-badge-link:hover { border-color: #d6249f; color: #fd5949; }
   .post-actions { display: flex; align-items: center; gap: 12px; margin-top: 14px; flex-wrap: wrap; }
   .like-btn {
     display: flex; align-items: center; gap: 6px; background: none; border: 1px solid var(--border);
@@ -168,7 +192,7 @@
 
   /* ── PROFILE ── */
   .profile-header { padding: 24px 20px 0; }
-  .profile-avatar { width: 70px; height: 70px; border-radius: 50%; background: var(--yellow); display: flex; align-items: center; justify-content: center; font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 28px; color: #000; }
+  .profile-avatar { width: 70px; height: 70px; border-radius: 50%; background: var(--yellow); display: flex; align-items: center; justify-content: center; font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 28px; color: #000; overflow: hidden; }
   .profile-name { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 22px; margin-top: 12px; }
   .profile-handle { color: var(--grey); font-size: 14px; margin-top: 2px; }
   .profile-stats { display: flex; gap: 24px; margin-top: 16px; }
@@ -181,10 +205,11 @@
 
   /* ── ADD POST ── */
   .add-post-sheet {
-    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%) translateY(100%);
+    position: fixed; bottom: 0; left: 50%;
     width: 100%; max-width: 480px; background: var(--card);
     border-top: 1px solid var(--border); border-radius: 20px 20px 0 0;
-    padding: 20px; z-index: 200; transform: translateY(100%); transition: transform .3s ease;
+    padding: 20px; z-index: 200;
+    transform: translateX(-50%) translateY(100%); transition: transform .3s ease;
   }
   .add-post-sheet.open { transform: translateX(-50%) translateY(0); }
   .sheet-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 16px; }
@@ -194,7 +219,38 @@
 
   /* ── AUTH ── */
   #screen-auth { align-items: center; justify-content: center; padding: 32px 24px; text-align: center; }
-  .auth-logo { font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 48px; color: var(--yellow); margin-bottom: 8px; }
+  .auth-logo-wrap { position: relative; display: inline-block; margin-bottom: 4px; }
+  .auth-logo {
+    font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 44px;
+    letter-spacing: -1px; position: relative; display: inline-block;
+    animation: logoFloat 3.5s ease-in-out infinite;
+  }
+  .auth-logo .lp-punch { color: var(--yellow); }
+  .auth-logo .lp-line { color: var(--white); }
+  .auth-logo-shine {
+    position: absolute; top: 0; left: -100%; width: 60%; height: 100%;
+    background: linear-gradient(100deg, transparent, rgba(255,255,255,.55), transparent);
+    animation: logoShine 3.5s ease-in-out infinite;
+    pointer-events: none; mix-blend-mode: overlay;
+  }
+  .auth-logo-reflect {
+    font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 44px;
+    letter-spacing: -1px; transform: scaleY(-1); opacity: .14;
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,.5), transparent 80%);
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,.5), transparent 80%);
+    margin-top: -4px; user-select: none;
+  }
+  .auth-logo-reflect .lp-punch { color: var(--yellow); }
+  .auth-logo-reflect .lp-line { color: var(--white); }
+  @keyframes logoFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+  }
+  @keyframes logoShine {
+    0%   { left: -60%; }
+    45%  { left: 130%; }
+    100% { left: 130%; }
+  }
   .auth-tagline { color: var(--grey); font-size: 16px; margin-bottom: 40px; }
   .auth-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 28px 24px; width: 100%; max-width: 380px; text-align: left; }
   .auth-tabs { display: flex; gap: 0; margin-bottom: 20px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
@@ -205,7 +261,7 @@
   #screen-share { align-items: center; justify-content: center; padding: 24px 20px; }
   .share-popup { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 28px 24px; max-width: 400px; width: 100%; }
   .share-by { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
-  .share-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--yellow); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; color: #000; }
+  .share-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--yellow); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; color: #000; overflow: hidden; }
   .share-username { font-weight: 600; font-size: 15px; }
   .share-score-big { font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 64px; color: var(--yellow); line-height: 1; }
   .share-comment-text { font-size: 18px; line-height: 1.5; margin: 16px 0; font-weight: 500; }
@@ -250,6 +306,23 @@
   @keyframes spin { to { transform: rotate(360deg); } }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
   .loading-text { color: var(--grey); text-align: center; padding: 40px; }
+
+  /* ── TOGGLE SWITCH ── */
+  .toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 0; }
+  .toggle-label { font-size: 14px; font-weight: 500; }
+  .toggle-sub { font-size: 12px; color: var(--grey); margin-top: 2px; }
+  .toggle-switch { position: relative; width: 46px; height: 26px; flex-shrink: 0; }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider {
+    position: absolute; inset: 0; background: var(--card2); border: 1px solid var(--border);
+    border-radius: 14px; cursor: pointer; transition: all .2s;
+  }
+  .toggle-slider::before {
+    content: ''; position: absolute; width: 18px; height: 18px; left: 3px; top: 3px;
+    background: var(--grey); border-radius: 50%; transition: all .2s;
+  }
+  .toggle-switch input:checked + .toggle-slider { background: rgba(245,245,0,.15); border-color: var(--yellow); }
+  .toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); background: var(--yellow); }
 </style>
 </head>
 <body>
@@ -258,7 +331,13 @@
 
   <!-- ══ SCREEN AUTH ══ -->
   <div id="screen-auth" class="screen">
-    <div class="auth-logo">P</div>
+    <div class="auth-logo-wrap">
+      <div class="auth-logo">
+        <span class="lp-punch">Punch</span><span class="lp-line">line</span>
+        <div class="auth-logo-shine"></div>
+      </div>
+      <div class="auth-logo-reflect"><span class="lp-punch">Punch</span><span class="lp-line">line</span></div>
+    </div>
     <p class="auth-tagline">Ton commentaire, ton art.</p>
     <div class="auth-card" style="text-align:center;">
       <button class="btn btn-primary w-full" onclick="doGoogleLogin()" style="display:flex;align-items:center;justify-content:center;gap:10px;padding:14px;">
@@ -416,8 +495,21 @@
 <!-- ══ SETTINGS MODAL ══ -->
 <div class="modal" id="settings-modal">
   <div class="modal-box">
-    <div class="modal-title">Mon compte</div>
+    <div class="modal-title">Réglages</div>
     <div id="settings-info" class="text-sm text-grey mb-12"></div>
+    <div class="hr"></div>
+
+    <div class="toggle-row">
+      <div>
+        <div class="toggle-label">Photo de profil Google</div>
+        <div class="toggle-sub">Afficher ta photo Google sur ton avatar, dans le classement et tes posts.</div>
+      </div>
+      <label class="toggle-switch">
+        <input type="checkbox" id="toggle-photo" onchange="togglePhotoPref(this.checked)"/>
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+
     <div class="hr"></div>
     <button class="btn btn-danger w-full" onclick="doLogout()">Se déconnecter</button>
     <button class="btn btn-ghost w-full mt-8" onclick="closeSettings()">Fermer</button>
@@ -499,14 +591,7 @@ const CATS = {
   biz:   { label: '💼 Business',   color: '#00E5A0' },
 };
 
-const LEVELS = [
-  { min: 0,    icon: '🥚', label: 'Débutant',   desc: 'Tu écloses...' },
-  { min: 50,   icon: '🐣', label: 'Apprenti',   desc: 'Le wit s\'éveille.' },
-  { min: 200,  icon: '🎤', label: 'Puncheur',   desc: 'Tu commences à frapper.' },
-  { min: 500,  icon: '🔥', label: 'Incandescent', desc: 'Chaud patate.' },
-  { min: 1000, icon: '⚡', label: 'Électrique', desc: 'Impossible de t\'ignorer.' },
-  { min: 2500, icon: '👑', label: 'Légende',    desc: 'Un commentaire, un chef-d\'œuvre.' },
-];
+
 
 // ══ STATE ══
 let currentUser = null;
@@ -515,6 +600,7 @@ let ownPostsCache = [];
 let historyStack = [];
 let pubProfileUid = null;
 window.currentUserUid = null; // exposé pour les onclick inline
+Object.defineProperty(window, 'pubProfileUid', { get: () => pubProfileUid }); // idem, lecture seule depuis onclick inline
 
 // ══ UTILS ══
 window.toast = function(msg) {
@@ -522,12 +608,6 @@ window.toast = function(msg) {
   t.textContent = msg; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2200);
 };
-
-function getLevel(score) {
-  let lv = LEVELS[0];
-  for (const l of LEVELS) if (score >= l.min) lv = l;
-  return lv;
-}
 
 function getDominantCat(cats) {
   let best = 'funny', bestVal = -1;
@@ -538,9 +618,8 @@ function getDominantCat(cats) {
 function initUserCats() { return { funny: 0, smart: 0, love: 0, biz: 0 }; }
 
 function renderLevelBadge(score, cats) {
-  const lv = getLevel(score);
   const dom = getDominantCat(cats);
-  return `<div class="level-badge"><span class="level-icon">${lv.icon}</span><span>${lv.label}</span><span class="cat-badge cat-${dom}">${CATS[dom].label}</span></div>`;
+  return `<div class="level-badge"><span class="cat-badge cat-${dom}">${CATS[dom].label}</span></div>`;
 }
 
 function renderScoreBars(cats, total) {
@@ -565,6 +644,14 @@ function extractVideoHost(url) {
 
 function initials(name) {
   return (name || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+}
+
+// Retourne le HTML interne d'un avatar : photo Google si autorisé+dispo, sinon initiales
+function avatarInnerHTML(u) {
+  if (u && u.showPhoto && u.photoURL) {
+    return `<img src="${escHtml(u.photoURL)}" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;" referrerpolicy="no-referrer"/>`;
+  }
+  return initials(u ? u.name : '');
 }
 
 // ══ "NOUVEAU POST" TRACKING (local, par appareil) ══
@@ -704,6 +791,7 @@ window.submitPseudo = async function() {
       nameLower: name.toLowerCase(),
       email: pendingGoogleUser.email,
       photoURL: pendingGoogleUser.photoURL || null,
+      showPhoto: false,
       score: 0, totalLikes: 0, postCount: 0,
       followers: [], following: [],
       cats: initUserCats(),
@@ -744,7 +832,6 @@ async function loadRanking() {
     }
     const medals = ['🥇','🥈','🥉'];
     container.innerHTML = users.map((u, i) => {
-      const lv  = getLevel(u.score || 0);
       const dom = getDominantCat(u.cats || {});
       const isMe = currentUser && u.id === currentUser.uid;
       return `<div style="
@@ -757,7 +844,7 @@ async function loadRanking() {
           ${medals[i] || `<span style="color:#555;font-weight:700;font-size:14px">#${i+1}</span>`}
         </div>
         <div style="width:42px;height:42px;border-radius:50%;background:#F5F500;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;color:#000;flex-shrink:0;">
-          ${initials(u.name)}
+          ${avatarInnerHTML(u)}
         </div>
         <div style="flex:1; min-width:0;">
           <div style="font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:6px;">
@@ -765,7 +852,6 @@ async function loadRanking() {
             <span style="overflow:hidden;text-overflow:ellipsis;">${escHtml(u.name || '?')}</span> ${isMe ? '<span style="color:#F5F500;font-size:12px;">• toi</span>' : ''}
           </div>
           <div style="display:flex;align-items:center;gap:6px;margin-top:3px;">
-            <span style="font-size:12px;">${lv.icon} ${lv.label}</span>
             <span style="font-size:14px;" title="${CATS[dom].label}">${CATS[dom].label.split(' ')[0]}</span>
           </div>
         </div>
@@ -871,9 +957,9 @@ async function loadOwnProfile() {
   const d = snap.data();
   currentUserData = d;
 
-  const ini = initials(d.name);
-  document.getElementById('own-avatar-btn').textContent = ini;
-  document.getElementById('own-avatar-big').textContent = ini;
+  const avatarHtml = avatarInnerHTML(d);
+  document.getElementById('own-avatar-btn').innerHTML = avatarHtml;
+  document.getElementById('own-avatar-big').innerHTML = avatarHtml;
   document.getElementById('own-name').textContent   = d.name || '—';
   document.getElementById('own-handle').textContent = '@' + (d.name || '—').toLowerCase().replace(/\s+/g, '');
   document.getElementById('own-stat-posts').textContent = d.postCount || 0;
@@ -903,7 +989,7 @@ async function loadPublicProfile(uid) {
   if (!snap.exists()) { document.getElementById('pub-posts-list').innerHTML = '<div class="empty-state"><p>Profil introuvable.</p></div>'; return; }
   const d = snap.data();
 
-  document.getElementById('pub-avatar-big').textContent = initials(d.name);
+  document.getElementById('pub-avatar-big').innerHTML = avatarInnerHTML(d);
   document.getElementById('pub-name').textContent   = d.name || '—';
   document.getElementById('pub-handle').textContent = '@' + (d.name || '—').toLowerCase().replace(/\s+/g, '');
   document.getElementById('pub-stat-posts').textContent = d.postCount || 0;
@@ -978,7 +1064,7 @@ window.showFollowingList = async function(uid, type) {
     }
     listEl.innerHTML = users.map(u => `
       <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer;" onclick="closeFollowingModal(); navToProfile('${u.id}')">
-        <div style="width:38px;height:38px;border-radius:50%;background:#F5F500;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:#000;flex-shrink:0;">${initials(u.name)}</div>
+        <div style="width:38px;height:38px;border-radius:50%;background:#F5F500;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:#000;flex-shrink:0;overflow:hidden;">${avatarInnerHTML(u)}</div>
         <div style="flex:1;min-width:0;">
           <div style="font-weight:600;font-size:14px;">${escHtml(u.name || '?')}</div>
           <div style="font-size:12px;color:var(--grey);">${u.score || 0} pts</div>
@@ -1019,6 +1105,52 @@ function getHostIcon(url) {
   return { icon: '🎬', label: extractVideoHost(url), color: '#444' };
 }
 
+// Logo Instagram officiel en SVG (glyphe simplifié, dégradé via fond CSS)
+const IG_LOGO_SVG = `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="2" y="2" width="20" height="20" rx="6" stroke="white" stroke-width="2"/>
+  <circle cx="12" cy="12" r="5" stroke="white" stroke-width="2"/>
+  <circle cx="17.5" cy="6.5" r="1.3" fill="white"/>
+</svg>`;
+
+// Petit logo TikTok (note de musique stylisée) pour badge overlay sur miniature
+const TIKTOK_LOGO_SVG = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M16.5 3c.4 2.2 1.9 3.8 4.5 4v3c-1.6 0-3-.5-4.5-1.4v6.5c0 3.6-2.9 6.4-6.5 6.4S3.5 18.7 3.5 15.1c0-3.5 2.7-6.3 6.2-6.4v3.1c-1.8.1-3.2 1.5-3.2 3.3 0 1.8 1.5 3.3 3.3 3.3s3.3-1.5 3.3-3.3V3h3.4z" fill="white"/>
+</svg>`;
+
+// Petit logo YouTube (play button) pour badge overlay sur miniature
+const YOUTUBE_LOGO_SVG = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="1" y="5" width="22" height="14" rx="4" fill="#FF0000"/>
+  <polygon points="10,8.5 16,12 10,15.5" fill="white"/>
+</svg>`;
+
+// Génère le HTML de la zone "miniature" d'un post selon sa plateforme.
+// Instagram -> badge compact (pas de cadre 16:9). Autres -> cadre avec data-thumb pour hydratation.
+function renderVideoThumb(videoUrl, postId, idAttr) {
+  if (!videoUrl) return '';
+  const host = extractVideoHost(videoUrl);
+  if (videoUrl.includes('instagram.com')) {
+    return `<div class="ig-badge-wrap">
+      <div class="ig-badge-icon">${IG_LOGO_SVG}</div>
+      <a href="${escHtml(videoUrl)}" target="_blank" rel="noopener" class="ig-badge-link">Voir sur Instagram</a>
+    </div>`;
+  }
+  let networkBadge = '';
+  if (videoUrl.includes('tiktok.com')) {
+    networkBadge = `<div class="post-thumb-network-badge">${TIKTOK_LOGO_SVG}</div>`;
+  } else if (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')) {
+    networkBadge = `<div class="post-thumb-network-badge">${YOUTUBE_LOGO_SVG}</div>`;
+  }
+  return `<a href="${escHtml(videoUrl)}" target="_blank" rel="noopener" style="display:block;text-decoration:none;">
+    <div class="post-thumb-wrap" ${idAttr}>
+      <div class="post-thumb-placeholder">
+        <span class="thumb-icon">${getHostIcon(videoUrl).icon}</span>
+        <span style="color:var(--grey);font-size:13px;">${escHtml(host)}</span>
+      </div>
+      ${networkBadge}
+    </div>
+  </a>`;
+}
+
 function renderThumbPlaceholder(videoUrl) {
   const { icon, label } = getHostIcon(videoUrl);
   return `<div class="post-thumb-wrap">
@@ -1036,10 +1168,17 @@ async function hydratePostThumbnails(container, posts) {
     if (!thumbEl) continue;
     const thumbUrl = await fetchThumbnail(p.videoUrl);
     if (thumbUrl) {
+      let networkBadge = '';
+      if (p.videoUrl.includes('tiktok.com')) {
+        networkBadge = `<div class="post-thumb-network-badge">${TIKTOK_LOGO_SVG}</div>`;
+      } else if (p.videoUrl.includes('youtube.com') || p.videoUrl.includes('youtu.be')) {
+        networkBadge = `<div class="post-thumb-network-badge">${YOUTUBE_LOGO_SVG}</div>`;
+      }
       thumbEl.innerHTML = `<img src="${thumbUrl}" alt="miniature" loading="lazy"/>
         <div class="post-thumb-play">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
-        </div>`;
+        </div>
+        ${networkBadge}`;
     }
   }
 }
@@ -1089,14 +1228,7 @@ function renderPostCard(p, isOwn) {
     <div class="post-score" id="score-${p.id}">${score}</div>
     <div class="post-score-label">points</div>
     <p class="post-comment">"${escHtml(p.comment || '')}"</p>
-    ${p.videoUrl ? `<a href="${escHtml(p.videoUrl)}" target="_blank" rel="noopener" style="display:block;text-decoration:none;">
-      <div class="post-thumb-wrap" data-thumb="${p.id}">
-        <div class="post-thumb-placeholder">
-          <span class="thumb-icon">${getHostIcon(p.videoUrl).icon}</span>
-          <span style="color:var(--grey);font-size:13px;">${escHtml(host)}</span>
-        </div>
-      </div>
-    </a>` : ''}
+    ${renderVideoThumb(p.videoUrl, p.id, `data-thumb="${p.id}"`)}
     <div class="score-bars mt-8">${catBars}</div>
     <div class="cat-vote-row">${catVoteBtns}</div>
     <div class="post-actions">
@@ -1322,30 +1454,23 @@ async function loadSharePost(postId) {
   const p = snap.data();
   const userSnap = await getDoc(doc(db, 'users', p.uid));
   const u = userSnap.exists() ? userSnap.data() : { name: '?', score: 0 };
-  const lv = getLevel(u.score || 0);
+  const dom = getDominantCat(u.cats || {});
   const host = extractVideoHost(p.videoUrl || '');
   const liked = currentUser && (p.likedBy || []).includes(currentUser.uid);
   const isOwn = currentUser && currentUser.uid === p.uid;
 
   container.innerHTML = `
     <div class="share-by">
-      <div class="share-avatar" style="cursor:pointer" onclick="navToProfile('${p.uid}')">${initials(u.name)}</div>
+      <div class="share-avatar" style="cursor:pointer;overflow:hidden;" onclick="navToProfile('${p.uid}')">${avatarInnerHTML(u)}</div>
       <div>
         <div class="share-username" style="cursor:pointer" onclick="navToProfile('${p.uid}')">${escHtml(u.name)}</div>
-        <div class="text-sm text-grey">${lv.icon} ${lv.label}</div>
+        <div class="text-sm text-grey">${CATS[dom].label}</div>
       </div>
     </div>
     <div class="share-score-big" id="share-score">${p.score || 0}</div>
     <div class="text-sm text-grey">points</div>
     <p class="share-comment-text">"${escHtml(p.comment || '')}"</p>
-    ${p.videoUrl ? `<a href="${escHtml(p.videoUrl)}" target="_blank" rel="noopener" style="display:block;text-decoration:none;margin-bottom:12px;">
-      <div class="post-thumb-wrap" id="share-thumb">
-        <div class="post-thumb-placeholder">
-          <span class="thumb-icon">${getHostIcon(p.videoUrl).icon}</span>
-          <span style="color:var(--grey);font-size:13px;">Voir la vidéo sur ${escHtml(host)}</span>
-        </div>
-      </div>
-    </a>` : ''}
+    ${renderVideoThumb(p.videoUrl, snap.id, 'id="share-thumb"')}
     <div class="cat-vote-row mt-12">
       ${Object.entries(CATS).map(([k, c]) => {
         const myVotes = (currentUser && p.catVotes && p.catVotes[currentUser.uid]) || null;
@@ -1362,15 +1487,22 @@ async function loadSharePost(postId) {
     </div>
   `;
 
-  // hydrate la miniature réelle de façon async
-  if (p.videoUrl) {
+  // hydrate la miniature réelle de façon async (sauf Instagram qui a déjà son badge dédié)
+  if (p.videoUrl && !p.videoUrl.includes('instagram.com')) {
     fetchThumbnail(p.videoUrl).then(thumbUrl => {
       const el = document.getElementById('share-thumb');
       if (el && thumbUrl) {
+        let networkBadge = '';
+        if (p.videoUrl.includes('tiktok.com')) {
+          networkBadge = `<div class="post-thumb-network-badge">${TIKTOK_LOGO_SVG}</div>`;
+        } else if (p.videoUrl.includes('youtube.com') || p.videoUrl.includes('youtu.be')) {
+          networkBadge = `<div class="post-thumb-network-badge">${YOUTUBE_LOGO_SVG}</div>`;
+        }
         el.innerHTML = `<img src="${thumbUrl}" alt="miniature" loading="lazy"/>
           <div class="post-thumb-play">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
-          </div>`;
+          </div>
+          ${networkBadge}`;
       }
     });
   }
@@ -1395,8 +1527,30 @@ window.navToProfile = function(uid) {
 };
 
 // ══ SETTINGS ══
-window.showSettings = function() { document.getElementById('settings-modal').classList.add('active'); };
+window.showSettings = function() {
+  document.getElementById('settings-modal').classList.add('active');
+  const toggle = document.getElementById('toggle-photo');
+  toggle.checked = !!(currentUserData && currentUserData.showPhoto);
+  // si l'utilisateur n'a pas de photo Google, on désactive le toggle
+  if (!currentUser || !currentUser.photoURL) {
+    toggle.disabled = true;
+  } else {
+    toggle.disabled = false;
+  }
+};
 window.closeSettings = function() { document.getElementById('settings-modal').classList.remove('active'); };
+
+window.togglePhotoPref = async function(checked) {
+  if (!currentUser) return;
+  try {
+    await updateDoc(doc(db, 'users', currentUser.uid), { showPhoto: checked });
+    currentUserData.showPhoto = checked;
+    toast(checked ? '📸 Photo Google activée' : 'Photo Google désactivée');
+    loadOwnProfile();
+  } catch (e) {
+    toast('Erreur : ' + e.message);
+  }
+};
 
 // ══ DEEP LINK ROUTING ══
 function handleHash() {
