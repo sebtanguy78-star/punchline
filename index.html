@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
 <title>Punchline</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
 <style>
@@ -21,8 +21,26 @@
     --biz: #00E5A0;
     --danger: #FF4444;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; background: var(--bg); color: var(--white); font-family: 'Inter', sans-serif; }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html {
+    height: 100%; background: #000;
+    touch-action: pan-y;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+  body {
+    height: 100%; background: #000; color: var(--white); font-family: 'Inter', sans-serif;
+    overscroll-behavior: none;
+    -webkit-user-select: none; user-select: none;
+    display: flex; justify-content: center;
+  }
+  input, textarea { -webkit-user-select: text; user-select: text; }
+  #app {
+    width: 100%; max-width: 480px; min-height: 100vh; min-height: 100dvh;
+    background: var(--bg); position: relative;
+    box-shadow: 0 0 60px rgba(0,0,0,.5);
+  }
+
 
   /* ── LAYOUT ── */
   #app { min-height: 100vh; }
@@ -163,11 +181,12 @@
 
   /* ── ADD POST ── */
   .add-post-sheet {
-    position: fixed; bottom: 0; left: 0; right: 0; background: var(--card);
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%) translateY(100%);
+    width: 100%; max-width: 480px; background: var(--card);
     border-top: 1px solid var(--border); border-radius: 20px 20px 0 0;
     padding: 20px; z-index: 200; transform: translateY(100%); transition: transform .3s ease;
   }
-  .add-post-sheet.open { transform: translateY(0); }
+  .add-post-sheet.open { transform: translateX(-50%) translateY(0); }
   .sheet-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 16px; }
   .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 199; display: none; }
   .overlay.active { display: block; }
@@ -193,11 +212,11 @@
   .share-actions { display: flex; gap: 10px; margin-top: 20px; }
 
   /* ── TOAST ── */
-  .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--card2); border: 1px solid var(--border); color: var(--white); padding: 10px 20px; border-radius: 24px; font-size: 14px; opacity: 0; transition: all .3s; z-index: 500; white-space: nowrap; }
+  .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--card2); border: 1px solid var(--border); color: var(--white); padding: 10px 20px; border-radius: 24px; font-size: 14px; opacity: 0; transition: all .3s; z-index: 500; white-space: nowrap; max-width: 90vw; }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
   /* ── BOTTOM NAV ── */
-  .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 10px 0 20px; z-index: 100; }
+  .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: var(--bg); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 10px 0 20px; z-index: 100; }
   .nav-btn { display: flex; flex-direction: column; align-items: center; gap: 3px; background: none; border: none; color: var(--grey); cursor: pointer; padding: 6px 20px; font-size: 10px; font-family: 'Inter', sans-serif; transition: color .15s; }
   .nav-btn.active, .nav-btn:hover { color: var(--yellow); }
   .nav-btn svg { width: 22px; height: 22px; }
@@ -241,38 +260,28 @@
   <div id="screen-auth" class="screen">
     <div class="auth-logo">P</div>
     <p class="auth-tagline">Ton commentaire, ton art.</p>
-    <div class="auth-card">
-      <div class="auth-tabs">
-        <button class="auth-tab active" onclick="switchAuthTab('login')">Connexion</button>
-        <button class="auth-tab" onclick="switchAuthTab('signup')">Inscription</button>
-      </div>
-      <div id="auth-login">
-        <div class="form-group">
-          <label>Email</label>
-          <input type="email" id="login-email" placeholder="toi@mail.com"/>
-        </div>
-        <div class="form-group">
-          <label>Mot de passe</label>
-          <input type="password" id="login-pwd" placeholder="••••••••"/>
-        </div>
-        <button class="btn btn-primary w-full" onclick="doLogin()">Se connecter</button>
-      </div>
-      <div id="auth-signup" style="display:none">
-        <div class="form-group">
-          <label>Pseudo</label>
-          <input type="text" id="signup-name" placeholder="@tonsuperpseudo" maxlength="24"/>
-        </div>
-        <div class="form-group">
-          <label>Email</label>
-          <input type="email" id="signup-email" placeholder="toi@mail.com"/>
-        </div>
-        <div class="form-group">
-          <label>Mot de passe</label>
-          <input type="password" id="signup-pwd" placeholder="min. 6 caractères"/>
-        </div>
-        <button class="btn btn-primary w-full" onclick="doSignup()">Créer mon profil</button>
-      </div>
+    <div class="auth-card" style="text-align:center;">
+      <button class="btn btn-primary w-full" onclick="doGoogleLogin()" style="display:flex;align-items:center;justify-content:center;gap:10px;padding:14px;">
+        <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.6-6 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 3l5.7-5.7C34.5 6 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-4z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.5 16 18.9 13 24 13c3.1 0 5.8 1.1 8 3l5.7-5.7C34.5 6 29.6 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.5 0 10.4-1.9 14.2-5.1l-6.5-5.5C29.6 35.4 26.9 36 24 36c-5.3 0-9.7-3.4-11.3-8.1l-6.6 5.1C9.6 39.6 16.3 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.2 5.7l6.5 5.5C39.6 37.4 44 31.4 44 24c0-1.3-.1-2.7-.4-3.5z"/></svg>
+        Continuer avec Google
+      </button>
       <p id="auth-error" class="text-sm mt-8" style="color:var(--danger);display:none;"></p>
+    </div>
+  </div>
+
+  <!-- ══ SCREEN PSEUDO (première connexion) ══ -->
+  <div id="screen-pseudo" class="screen">
+    <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;">
+      <div class="auth-card" style="max-width:380px;">
+        <div class="auth-logo" style="font-size:36px;margin-bottom:4px;">🎤</div>
+        <p style="font-weight:700;font-size:18px;margin-bottom:4px;">Choisis ton pseudo</p>
+        <p class="text-sm text-grey" style="margin-bottom:20px;">Unique, sans espaces. C'est ton identité Punchline.</p>
+        <div class="form-group">
+          <input type="text" id="pseudo-input" placeholder="MaximeL" maxlength="20" oninput="checkPseudoAvailability()"/>
+          <div class="text-sm mt-8" id="pseudo-status" style="display:none;"></div>
+        </div>
+        <button class="btn btn-primary w-full" id="pseudo-submit-btn" onclick="submitPseudo()" disabled>Confirmer</button>
+      </div>
     </div>
   </div>
 
@@ -295,13 +304,17 @@
           <div class="stat-num" id="own-stat-posts">0</div>
           <div class="stat-label">Punchlines</div>
         </div>
-        <div class="stat-item">
-          <div class="stat-num" id="own-stat-likes">0</div>
-          <div class="stat-label">Likes reçus</div>
+        <div class="stat-item" style="cursor:pointer" onclick="showFollowingList(currentUserUid, 'followers')">
+          <div class="stat-num" id="own-stat-followers">0</div>
+          <div class="stat-label">Abonnés</div>
+        </div>
+        <div class="stat-item" style="cursor:pointer" onclick="showFollowingList(currentUserUid, 'following')">
+          <div class="stat-num" id="own-stat-following">0</div>
+          <div class="stat-label">Abonnements</div>
         </div>
         <div class="stat-item">
           <div class="stat-num" id="own-stat-score">0</div>
-          <div class="stat-label">Score total</div>
+          <div class="stat-label">Score</div>
         </div>
       </div>
     </div>
@@ -336,15 +349,16 @@
           <div class="stat-num" id="pub-stat-posts">0</div>
           <div class="stat-label">Punchlines</div>
         </div>
-        <div class="stat-item">
-          <div class="stat-num" id="pub-stat-likes">0</div>
-          <div class="stat-label">Likes reçus</div>
+        <div class="stat-item" style="cursor:pointer" id="pub-followers-stat" onclick="showFollowingList(pubProfileUid, 'followers')">
+          <div class="stat-num" id="pub-stat-followers">0</div>
+          <div class="stat-label">Abonnés</div>
         </div>
         <div class="stat-item">
           <div class="stat-num" id="pub-stat-score">0</div>
-          <div class="stat-label">Score total</div>
+          <div class="stat-label">Score</div>
         </div>
       </div>
+      <button class="btn btn-primary w-full mt-12" id="follow-btn" onclick="toggleFollow()">+ Suivre</button>
     </div>
     <div class="profile-scores">
       <div class="section-title">Son style</div>
@@ -410,6 +424,26 @@
   </div>
 </div>
 
+<!-- ══ DELETE CONFIRM MODAL ══ -->
+<div class="modal" id="delete-modal">
+  <div class="modal-box">
+    <div class="modal-title">Supprimer cette punchline ?</div>
+    <p class="text-sm text-grey mt-8">Cette action est irréversible. Le post et tous ses likes/votes seront définitivement supprimés.</p>
+    <div class="hr"></div>
+    <button class="btn btn-danger w-full" onclick="doDeletePost()">Supprimer définitivement</button>
+    <button class="btn btn-ghost w-full mt-8" onclick="closeDeleteModal()">Annuler</button>
+  </div>
+</div>
+
+<!-- ══ FOLLOWING LIST MODAL ══ -->
+<div class="modal" id="following-modal">
+  <div class="modal-box" style="max-height:70vh;overflow-y:auto;">
+    <div class="modal-title" id="following-modal-title">Abonnements</div>
+    <div id="following-list"></div>
+    <button class="btn btn-ghost w-full mt-12" onclick="closeFollowingModal()">Fermer</button>
+  </div>
+</div>
+
 <!-- ══ BOTTOM NAV ══ -->
 <div class="bottom-nav" id="bottom-nav" style="display:none">
   <button class="nav-btn active" id="nav-profile" onclick="navToOwnProfile()">
@@ -433,13 +467,13 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
-  getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+  getAuth, GoogleAuthProvider, signInWithPopup,
   signOut, onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import {
-  getFirestore, doc, setDoc, getDoc, collection, addDoc, getDocs,
+  getFirestore, doc, setDoc, getDoc, collection, addDoc, getDocs, deleteDoc,
   updateDoc, increment, arrayUnion, arrayRemove, query, orderBy, where,
-  serverTimestamp, onSnapshot
+  serverTimestamp, onSnapshot, deleteField
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 // ── FIREBASE CONFIG ── remplace par tes valeurs
@@ -455,6 +489,7 @@ const firebaseConfig = {
 const fbApp = initializeApp(firebaseConfig);
 const auth  = getAuth(fbApp);
 const db    = getFirestore(fbApp);
+const googleProvider = new GoogleAuthProvider();
 
 // ══ CONSTANTS ══
 const CATS = {
@@ -465,7 +500,7 @@ const CATS = {
 };
 
 const LEVELS = [
-  { min: 0,    icon: '🥚', label: 'Rookie',     desc: 'Tu écloses...' },
+  { min: 0,    icon: '🥚', label: 'Débutant',   desc: 'Tu écloses...' },
   { min: 50,   icon: '🐣', label: 'Apprenti',   desc: 'Le wit s\'éveille.' },
   { min: 200,  icon: '🎤', label: 'Puncheur',   desc: 'Tu commences à frapper.' },
   { min: 500,  icon: '🔥', label: 'Incandescent', desc: 'Chaud patate.' },
@@ -478,6 +513,8 @@ let currentUser = null;
 let currentUserData = null;
 let ownPostsCache = [];
 let historyStack = [];
+let pubProfileUid = null;
+window.currentUserUid = null; // exposé pour les onclick inline
 
 // ══ UTILS ══
 window.toast = function(msg) {
@@ -530,12 +567,30 @@ function initials(name) {
   return (name || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 }
 
+// ══ "NOUVEAU POST" TRACKING (local, par appareil) ══
+function getSeenMap() {
+  try { return JSON.parse(localStorage.getItem('punchline_seen') || '{}'); }
+  catch { return {}; }
+}
+function markProfileSeen(uid) {
+  const map = getSeenMap();
+  map[uid] = Date.now();
+  try { localStorage.setItem('punchline_seen', JSON.stringify(map)); } catch {}
+}
+function hasNewPost(u) {
+  if (!u.lastPostAt) return false;
+  if (currentUser && u.id === currentUser.uid) return false; // jamais sur soi-même
+  const seenMap = getSeenMap();
+  const lastSeen = seenMap[u.id] || 0;
+  return u.lastPostAt > lastSeen;
+}
+
 // ══ SCREENS ══
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   const nav = document.getElementById('bottom-nav');
-  nav.style.display = (id === 'screen-auth') ? 'none' : 'flex';
+  nav.style.display = (id === 'screen-auth' || id === 'screen-pseudo') ? 'none' : 'flex';
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   if (id === 'screen-profile') document.getElementById('nav-profile').classList.add('active');
   if (id === 'screen-ranking') document.getElementById('nav-ranking').classList.add('active');
@@ -569,50 +624,99 @@ function navigateTo(screen, params = {}, push = true) {
   }
 }
 
-// ══ AUTH ══
-window.switchAuthTab = function(tab) {
-  document.getElementById('auth-login').style.display  = tab === 'login'  ? 'block' : 'none';
-  document.getElementById('auth-signup').style.display = tab === 'signup' ? 'block' : 'none';
-  document.querySelectorAll('.auth-tab').forEach((b, i) => {
-    b.classList.toggle('active', (tab === 'login' && i === 0) || (tab === 'signup' && i === 1));
-  });
-  hideAuthError();
-};
-
+// ══ AUTH (GOOGLE ONLY) ══
 function showAuthError(msg) {
   const el = document.getElementById('auth-error');
   el.textContent = msg; el.style.display = 'block';
 }
 function hideAuthError() { document.getElementById('auth-error').style.display = 'none'; }
 
-window.doLogin = async function() {
+window.doGoogleLogin = async function() {
   hideAuthError();
-  const email = document.getElementById('login-email').value.trim();
-  const pwd   = document.getElementById('login-pwd').value;
   try {
-    await signInWithEmailAndPassword(auth, email, pwd);
+    await signInWithPopup(auth, googleProvider);
+    // La suite (création de profil / choix pseudo) est gérée par onAuthStateChanged
   } catch (e) {
-    showAuthError(friendlyAuthError(e.code));
+    if (e.code !== 'auth/popup-closed-by-user') {
+      showAuthError('Erreur de connexion : ' + e.message);
+    }
   }
 };
 
-window.doSignup = async function() {
-  hideAuthError();
-  const name  = document.getElementById('signup-name').value.trim();
-  const email = document.getElementById('signup-email').value.trim();
-  const pwd   = document.getElementById('signup-pwd').value;
-  if (!name) return showAuthError('Choisis un pseudo.');
-  if (name.length < 2) return showAuthError('Pseudo trop court.');
+// ══ PSEUDO UNIQUE (première connexion) ══
+let pendingGoogleUser = null;
+let pseudoCheckTimeout = null;
+
+window.checkPseudoAvailability = function() {
+  const input  = document.getElementById('pseudo-input');
+  const status = document.getElementById('pseudo-status');
+  const btn    = document.getElementById('pseudo-submit-btn');
+  const raw    = input.value.trim();
+  const clean  = raw.replace(/\s+/g, '');
+  if (raw !== clean) input.value = clean;
+
+  btn.disabled = true;
+  if (clean.length < 3) {
+    status.style.display = 'block';
+    status.style.color = 'var(--grey)';
+    status.textContent = 'Minimum 3 caractères.';
+    return;
+  }
+  if (!/^[a-zA-Z0-9_]+$/.test(clean)) {
+    status.style.display = 'block';
+    status.style.color = 'var(--danger)';
+    status.textContent = 'Lettres, chiffres et _ uniquement.';
+    return;
+  }
+
+  status.style.display = 'block';
+  status.style.color = 'var(--grey)';
+  status.textContent = 'Vérification...';
+
+  clearTimeout(pseudoCheckTimeout);
+  pseudoCheckTimeout = setTimeout(async () => {
+    const q = query(collection(db, 'users'), where('nameLower', '==', clean.toLowerCase()));
+    const snap = await getDocs(q);
+    if (snap.empty) {
+      status.style.color = '#00E5A0';
+      status.textContent = '✓ Pseudo disponible';
+      btn.disabled = false;
+    } else {
+      status.style.color = 'var(--danger)';
+      status.textContent = '✗ Pseudo déjà pris';
+      btn.disabled = true;
+    }
+  }, 400);
+};
+
+window.submitPseudo = async function() {
+  const input = document.getElementById('pseudo-input');
+  const name  = input.value.trim();
+  if (!name || !pendingGoogleUser) return;
+
+  const btn = document.getElementById('pseudo-submit-btn');
+  btn.disabled = true; btn.textContent = 'Création...';
+
   try {
-    const cred = await createUserWithEmailAndPassword(auth, email, pwd);
-    await setDoc(doc(db, 'users', cred.user.uid), {
-      name, email,
+    const userRef = doc(db, 'users', pendingGoogleUser.uid);
+    await setDoc(userRef, {
+      name,
+      nameLower: name.toLowerCase(),
+      email: pendingGoogleUser.email,
+      photoURL: pendingGoogleUser.photoURL || null,
       score: 0, totalLikes: 0, postCount: 0,
+      followers: [], following: [],
       cats: initUserCats(),
       createdAt: serverTimestamp()
     });
+    pendingGoogleUser = null;
+    const snap = await getDoc(userRef);
+    currentUserData = snap.exists() ? snap.data() : {};
+    historyStack = [];
+    navigateTo('profile', {});
   } catch (e) {
-    showAuthError(friendlyAuthError(e.code));
+    toast('Erreur : ' + e.message);
+    btn.disabled = false; btn.textContent = 'Confirmer';
   }
 };
 
@@ -620,18 +724,6 @@ window.doLogout = async function() {
   await signOut(auth);
   closeSettings();
 };
-
-function friendlyAuthError(code) {
-  const map = {
-    'auth/email-already-in-use': 'Cet email est déjà utilisé.',
-    'auth/invalid-email': 'Email invalide.',
-    'auth/weak-password': 'Mot de passe trop court (min. 6 caractères).',
-    'auth/user-not-found': 'Aucun compte avec cet email.',
-    'auth/wrong-password': 'Mot de passe incorrect.',
-    'auth/invalid-credential': 'Email ou mot de passe incorrect.',
-  };
-  return map[code] || 'Erreur : ' + code;
-}
 
 // ══ AUTH STATE ══
 window.navToOwnProfile = function() { navigateTo('profile', {}); };
@@ -668,18 +760,26 @@ async function loadRanking() {
           ${initials(u.name)}
         </div>
         <div style="flex:1; min-width:0;">
-          <div style="font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-            ${escHtml(u.name || '?')} ${isMe ? '<span style="color:#F5F500;font-size:12px;">• toi</span>' : ''}
+          <div style="font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:6px;">
+            ${hasNewPost(u) ? '<span style="width:8px;height:8px;border-radius:50%;background:#00E5A0;flex-shrink:0;box-shadow:0 0 6px #00E5A0;" title="Nouvelle punchline"></span>' : ''}
+            <span style="overflow:hidden;text-overflow:ellipsis;">${escHtml(u.name || '?')}</span> ${isMe ? '<span style="color:#F5F500;font-size:12px;">• toi</span>' : ''}
           </div>
           <div style="display:flex;align-items:center;gap:6px;margin-top:3px;">
             <span style="font-size:12px;">${lv.icon} ${lv.label}</span>
-            <span style="padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;background:${CATS[dom].color}22;color:${CATS[dom].color};">${CATS[dom].label}</span>
+            <span style="font-size:14px;" title="${CATS[dom].label}">${CATS[dom].label.split(' ')[0]}</span>
           </div>
         </div>
         <div style="text-align:right;flex-shrink:0;">
           <div style="font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:22px;color:#F5F500;">${u.score || 0}</div>
           <div style="font-size:11px;color:#888;">pts</div>
         </div>
+        ${(!isMe && currentUser) ? `<button onclick="event.stopPropagation(); quickFollow('${u.id}', this)" data-following="${(u.followers || []).includes(currentUser.uid) ? '1' : '0'}" style="
+          background:${(u.followers || []).includes(currentUser.uid) ? 'rgba(245,245,0,.12)' : 'none'};
+          border:1px solid ${(u.followers || []).includes(currentUser.uid) ? '#F5F500' : '#2A2A2A'};
+          border-radius:8px; width:32px; height:32px; flex-shrink:0; cursor:pointer;
+          color:${(u.followers || []).includes(currentUser.uid) ? '#F5F500' : '#fff'};
+          font-size:16px; font-weight:700; transition:all .15s; display:flex; align-items:center; justify-content:center;
+        " title="${(u.followers || []).includes(currentUser.uid) ? 'Abonné' : 'Suivre'}">${(u.followers || []).includes(currentUser.uid) ? '✓' : '+'}</button>` : ''}
         <button onclick="event.stopPropagation(); shareUserProfile('${u.id}', '${escHtml(u.name || '')}')" style="
           background:none; border:1px solid #2A2A2A; border-radius:8px; padding:7px 10px;
           color:#888; cursor:pointer; font-size:16px; flex-shrink:0; transition:all .15s;
@@ -690,6 +790,41 @@ async function loadRanking() {
     container.innerHTML = '<div class="empty-state"><p>Erreur de chargement.</p></div>';
   }
 }
+
+window.quickFollow = async function(targetUid, btnEl) {
+  if (!currentUser) return toast('Connecte-toi pour suivre.');
+  if (currentUser.uid === targetUid) return;
+
+  const isFollowing = btnEl.dataset.following === '1';
+  const targetRef = doc(db, 'users', targetUid);
+  const meRef     = doc(db, 'users', currentUser.uid);
+
+  try {
+    if (isFollowing) {
+      await updateDoc(targetRef, { followers: arrayRemove(currentUser.uid) });
+      await updateDoc(meRef, { following: arrayRemove(targetUid) });
+      btnEl.dataset.following = '0';
+      btnEl.textContent = '+';
+      btnEl.style.background = 'none';
+      btnEl.style.borderColor = '#2A2A2A';
+      btnEl.style.color = '#fff';
+      btnEl.title = 'Suivre';
+      toast('Abonnement retiré.');
+    } else {
+      await updateDoc(targetRef, { followers: arrayUnion(currentUser.uid) });
+      await updateDoc(meRef, { following: arrayUnion(targetUid) });
+      btnEl.dataset.following = '1';
+      btnEl.textContent = '✓';
+      btnEl.style.background = 'rgba(245,245,0,.12)';
+      btnEl.style.borderColor = '#F5F500';
+      btnEl.style.color = '#F5F500';
+      btnEl.title = 'Abonné';
+      toast('✓ Abonné !');
+    }
+  } catch (e) {
+    toast('Erreur : ' + e.message);
+  }
+};
 
 window.shareUserProfile = function(uid, name) {
   const url = `${location.origin}${location.pathname}#profile/${uid}`;
@@ -705,13 +840,24 @@ window.shareUserProfile = function(uid, name) {
 onAuthStateChanged(auth, async user => {
   if (user) {
     currentUser = user;
+    window.currentUserUid = user.uid;
     const snap = await getDoc(doc(db, 'users', user.uid));
-    currentUserData = snap.exists() ? snap.data() : {};
+    if (!snap.exists()) {
+      // Première connexion : demander un pseudo unique avant de continuer
+      pendingGoogleUser = user;
+      showScreen('screen-pseudo');
+      const suggested = (user.displayName || '').replace(/\s+/g, '');
+      document.getElementById('pseudo-input').value = suggested.slice(0, 20);
+      checkPseudoAvailability();
+      return;
+    }
+    currentUserData = snap.data();
     historyStack = [];
     navigateTo('profile', {});
   } else {
     currentUser = null;
     currentUserData = null;
+    window.currentUserUid = null;
     historyStack = [];
     showScreen('screen-auth');
   }
@@ -731,7 +877,8 @@ async function loadOwnProfile() {
   document.getElementById('own-name').textContent   = d.name || '—';
   document.getElementById('own-handle').textContent = '@' + (d.name || '—').toLowerCase().replace(/\s+/g, '');
   document.getElementById('own-stat-posts').textContent = d.postCount || 0;
-  document.getElementById('own-stat-likes').textContent = d.totalLikes || 0;
+  document.getElementById('own-stat-followers').textContent = (d.followers || []).length;
+  document.getElementById('own-stat-following').textContent = (d.following || []).length;
   document.getElementById('own-stat-score').textContent = d.score || 0;
   document.getElementById('own-level-badge').innerHTML = renderLevelBadge(d.score || 0, d.cats || {});
   document.getElementById('own-score-bars').innerHTML  = renderScoreBars(d.cats || {}, d.score || 0);
@@ -750,6 +897,8 @@ async function loadOwnProfile() {
 // ══ PUBLIC PROFILE ══
 async function loadPublicProfile(uid) {
   if (!uid) return;
+  pubProfileUid = uid;
+  markProfileSeen(uid);
   const snap = await getDoc(doc(db, 'users', uid));
   if (!snap.exists()) { document.getElementById('pub-posts-list').innerHTML = '<div class="empty-state"><p>Profil introuvable.</p></div>'; return; }
   const d = snap.data();
@@ -758,10 +907,16 @@ async function loadPublicProfile(uid) {
   document.getElementById('pub-name').textContent   = d.name || '—';
   document.getElementById('pub-handle').textContent = '@' + (d.name || '—').toLowerCase().replace(/\s+/g, '');
   document.getElementById('pub-stat-posts').textContent = d.postCount || 0;
-  document.getElementById('pub-stat-likes').textContent = d.totalLikes || 0;
+  document.getElementById('pub-stat-followers').textContent = (d.followers || []).length;
   document.getElementById('pub-stat-score').textContent = d.score || 0;
   document.getElementById('pub-level-badge').innerHTML = renderLevelBadge(d.score || 0, d.cats || {});
   document.getElementById('pub-score-bars').innerHTML  = renderScoreBars(d.cats || {}, d.score || 0);
+
+  // Bouton follow
+  const isFollowing = currentUser && (d.followers || []).includes(currentUser.uid);
+  const followBtn = document.getElementById('follow-btn');
+  followBtn.textContent = isFollowing ? '✓ Abonné' : '+ Suivre';
+  followBtn.className = isFollowing ? 'btn btn-ghost w-full mt-12' : 'btn btn-primary w-full mt-12';
 
   const postsEl = document.getElementById('pub-posts-list');
   postsEl.innerHTML = '<div class="loading-text"><div class="spinner"></div></div>';
@@ -771,6 +926,73 @@ async function loadPublicProfile(uid) {
   psnap.forEach(pd => posts.push({ id: pd.id, ...pd.data() }));
   renderPostsList(postsEl, posts, false);
 }
+
+// ══ FOLLOW SYSTEM ══
+window.toggleFollow = async function() {
+  if (!currentUser) return toast('Connecte-toi pour suivre.');
+  if (!pubProfileUid) return;
+  if (currentUser.uid === pubProfileUid) return toast('Tu ne peux pas te suivre toi-même 😄');
+
+  const targetRef = doc(db, 'users', pubProfileUid);
+  const meRef     = doc(db, 'users', currentUser.uid);
+  const snap      = await getDoc(targetRef);
+  const isFollowing = snap.exists() && (snap.data().followers || []).includes(currentUser.uid);
+
+  try {
+    if (isFollowing) {
+      await updateDoc(targetRef, { followers: arrayRemove(currentUser.uid) });
+      await updateDoc(meRef, { following: arrayRemove(pubProfileUid) });
+      toast('Abonnement retiré.');
+    } else {
+      await updateDoc(targetRef, { followers: arrayUnion(currentUser.uid) });
+      await updateDoc(meRef, { following: arrayUnion(pubProfileUid) });
+      toast('✓ Abonné !');
+    }
+    loadPublicProfile(pubProfileUid);
+  } catch (e) {
+    toast('Erreur : ' + e.message);
+  }
+};
+
+window.showFollowingList = async function(uid, type) {
+  if (!uid) return;
+  const modal = document.getElementById('following-modal');
+  const title = document.getElementById('following-modal-title');
+  const listEl = document.getElementById('following-list');
+  title.textContent = type === 'followers' ? 'Abonnés' : 'Abonnements';
+  listEl.innerHTML = '<div class="loading-text"><div class="spinner"></div></div>';
+  modal.classList.add('active');
+
+  try {
+    const snap = await getDoc(doc(db, 'users', uid));
+    if (!snap.exists()) { listEl.innerHTML = '<p class="text-sm text-grey">Profil introuvable.</p>'; return; }
+    const ids = snap.data()[type] || [];
+    if (!ids.length) {
+      listEl.innerHTML = `<div class="empty-state"><div class="emoji">👤</div><p>${type === 'followers' ? 'Aucun abonné pour le moment.' : 'Aucun abonnement pour le moment.'}</p></div>`;
+      return;
+    }
+    const users = [];
+    for (const id of ids) {
+      const usnap = await getDoc(doc(db, 'users', id));
+      if (usnap.exists()) users.push({ id, ...usnap.data() });
+    }
+    listEl.innerHTML = users.map(u => `
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer;" onclick="closeFollowingModal(); navToProfile('${u.id}')">
+        <div style="width:38px;height:38px;border-radius:50%;background:#F5F500;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:#000;flex-shrink:0;">${initials(u.name)}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:600;font-size:14px;">${escHtml(u.name || '?')}</div>
+          <div style="font-size:12px;color:var(--grey);">${u.score || 0} pts</div>
+        </div>
+      </div>
+    `).join('');
+  } catch (e) {
+    listEl.innerHTML = '<p class="text-sm text-grey">Erreur de chargement.</p>';
+  }
+};
+
+window.closeFollowingModal = function() {
+  document.getElementById('following-modal').classList.remove('active');
+};
 
 // ══ THUMBNAIL CACHE ══
 const thumbCache = {};
@@ -832,19 +1054,6 @@ function renderPostsList(container, posts, isOwn) {
   // hydrate thumbnails async
   hydratePostThumbnails(container, posts);
   // bind like buttons
-  // hydrate share thumb
-  if (p.videoUrl) {
-    fetchThumbnail(p.videoUrl).then(thumbUrl => {
-      const el = document.getElementById('share-thumb');
-      if (el && thumbUrl) {
-        el.innerHTML = `<img src="${thumbUrl}" alt="miniature" loading="lazy"/>
-          <div class="post-thumb-play">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
-          </div>`;
-      }
-    });
-  }
-
   container.querySelectorAll('[data-like]').forEach(btn => {
     btn.addEventListener('click', () => toggleLike(btn.dataset.like, btn.dataset.owner));
   });
@@ -895,6 +1104,7 @@ function renderPostCard(p, isOwn) {
         ${myLike ? '❤️' : '🤍'} <span id="likes-${p.id}">${likes}</span>
       </button>
       <button class="btn btn-ghost btn-sm share-btn" onclick="sharePost('${p.id}')">🔗 Partager</button>
+      ${isOwn ? `<button class="btn btn-ghost btn-sm" style="color:var(--danger);border-color:var(--danger);margin-left:auto;" onclick="confirmDeletePost('${p.id}')">🗑️ Supprimer</button>` : ''}
     </div>
   </div>`;
 }
@@ -904,6 +1114,13 @@ function escHtml(s) {
 }
 
 // ══ LIKE ══
+// Détermine si l'utilisateur a déjà une interaction (like OU vote cat) sur ce post AVANT l'action en cours
+function hadAnyInteraction(p, uid) {
+  const liked = (p.likedBy || []).includes(uid);
+  const voted = !!(p.catVotes || {})[uid];
+  return liked || voted;
+}
+
 async function toggleLike(postId, ownerUid) {
   if (!currentUser) return toast('Connecte-toi pour liker.');
   if (currentUser.uid === ownerUid) return toast('Tu ne peux pas liker ta propre punchline 😄');
@@ -913,23 +1130,32 @@ async function toggleLike(postId, ownerUid) {
   if (!snap.exists()) return;
   const p      = snap.data();
   const liked  = (p.likedBy || []).includes(currentUser.uid);
-  const delta  = liked ? -1 : 1;
+  const hadInteraction = hadAnyInteraction(p, currentUser.uid);
 
-  await updateDoc(postRef, {
-    likes:   increment(delta),
-    score:   increment(delta),
+  const willHaveInteraction = !liked || !!(p.catVotes || {})[currentUser.uid];
+  // scoreDelta : +1 seulement si on n'avait aucune interaction et qu'on en crée une ;
+  //              -1 seulement si on perd la dernière interaction restante
+  let scoreDelta = 0;
+  if (!liked && !hadInteraction) scoreDelta = 1;            // premier like, aucune interaction avant
+  if (liked && !willHaveInteraction) scoreDelta = -1;        // on retire le like et il n'y a pas de vote cat derrière
+  const likeDelta = liked ? -1 : 1;
+
+  const updates = {
+    likes:   increment(likeDelta),
     likedBy: liked ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid)
-  });
-  await updateDoc(doc(db, 'users', ownerUid), {
-    totalLikes: increment(delta),
-    score:      increment(delta)
-  });
+  };
+  if (scoreDelta !== 0) updates.score = increment(scoreDelta);
+  await updateDoc(postRef, updates);
+
+  const userUpdates = { totalLikes: increment(likeDelta) };
+  if (scoreDelta !== 0) userUpdates.score = increment(scoreDelta);
+  await updateDoc(doc(db, 'users', ownerUid), userUpdates);
 
   // update UI
   const likesEl = document.getElementById('likes-' + postId);
   const scoreEl = document.getElementById('score-' + postId);
-  if (likesEl) likesEl.textContent = (parseInt(likesEl.textContent) || 0) + delta;
-  if (scoreEl) scoreEl.textContent = (parseInt(scoreEl.textContent) || 0) + delta;
+  if (likesEl) likesEl.textContent = (parseInt(likesEl.textContent) || 0) + likeDelta;
+  if (scoreEl && scoreDelta !== 0) scoreEl.textContent = (parseInt(scoreEl.textContent) || 0) + scoreDelta;
   const btn = document.querySelector(`[data-like="${postId}"]`);
   if (btn) {
     btn.classList.toggle('liked', !liked);
@@ -948,26 +1174,40 @@ async function voteCat(postId, cat, ownerUid) {
   if (!snap.exists()) return;
   const p       = snap.data();
   const prevVote= (p.catVotes || {})[currentUser.uid];
+  const liked   = (p.likedBy || []).includes(currentUser.uid);
+  const hadInteraction = hadAnyInteraction(p, currentUser.uid);
 
   const updates = {};
   if (prevVote === cat) {
-    // remove vote
-    updates[`cats.${cat}`]                    = increment(-1);
-    updates[`catVotes.${currentUser.uid}`]    = null; // will delete field
-    updates.score                             = increment(-1);
+    // retirer le vote
+    const willHaveInteraction = liked; // il reste le like s'il existe
+    const scoreDelta = willHaveInteraction ? 0 : -1;
+
+    updates[`cats.${cat}`]                 = increment(-1);
+    updates[`catVotes.${currentUser.uid}`] = deleteField();
+    if (scoreDelta !== 0) updates.score = increment(scoreDelta);
     await updateDoc(postRef, updates);
-    await updateDoc(doc(db, 'users', ownerUid), { [`cats.${cat}`]: increment(-1), score: increment(-1) });
+
+    const userUpdates = { [`cats.${cat}`]: increment(-1) };
+    if (scoreDelta !== 0) userUpdates.score = increment(scoreDelta);
+    await updateDoc(doc(db, 'users', ownerUid), userUpdates);
     toast('Vote retiré.');
   } else {
     if (prevVote) {
       updates[`cats.${prevVote}`] = increment(-1);
       await updateDoc(doc(db, 'users', ownerUid), { [`cats.${prevVote}`]: increment(-1) });
     }
+    // scoreDelta : +1 seulement si c'est la toute première interaction (ni like, ni vote avant)
+    const scoreDelta = (!hadInteraction) ? 1 : 0;
+
     updates[`cats.${cat}`]                 = increment(1);
     updates[`catVotes.${currentUser.uid}`] = cat;
-    updates.score                          = increment(prevVote ? 0 : 1);
+    if (scoreDelta !== 0) updates.score = increment(scoreDelta);
     await updateDoc(postRef, updates);
-    await updateDoc(doc(db, 'users', ownerUid), { [`cats.${cat}`]: increment(1), score: increment(prevVote ? 0 : 1) });
+
+    const userUpdates = { [`cats.${cat}`]: increment(1) };
+    if (scoreDelta !== 0) userUpdates.score = increment(scoreDelta);
+    await updateDoc(doc(db, 'users', ownerUid), userUpdates);
     toast(`${CATS[cat].label} voté !`);
   }
   // reload post area
@@ -1012,7 +1252,7 @@ window.submitPost = async function() {
       likedBy: [],
       createdAt: serverTimestamp()
     });
-    await updateDoc(doc(db, 'users', currentUser.uid), { postCount: increment(1) });
+    await updateDoc(doc(db, 'users', currentUser.uid), { postCount: increment(1), lastPostAt: Date.now() });
     document.getElementById('post-url').value     = '';
     document.getElementById('post-comment').value = '';
     document.getElementById('char-count').textContent = '0 / 280';
@@ -1023,6 +1263,28 @@ window.submitPost = async function() {
     toast('Erreur : ' + e.message);
   }
   btn.disabled = false; btn.textContent = 'Publier';
+};
+
+// ══ DELETE POST ══
+window.confirmDeletePost = function(postId) {
+  document.getElementById('delete-modal').classList.add('active');
+  document.getElementById('delete-modal').dataset.postId = postId;
+};
+window.closeDeleteModal = function() {
+  document.getElementById('delete-modal').classList.remove('active');
+};
+window.doDeletePost = async function() {
+  const postId = document.getElementById('delete-modal').dataset.postId;
+  if (!postId || !currentUser) return;
+  try {
+    await deleteDoc(doc(db, 'posts', postId));
+    await updateDoc(doc(db, 'users', currentUser.uid), { postCount: increment(-1) });
+    closeDeleteModal();
+    toast('🗑️ Punchline supprimée.');
+    loadOwnProfile();
+  } catch (e) {
+    toast('Erreur : ' + e.message);
+  }
 };
 
 // ══ SHARE POST ══
@@ -1099,6 +1361,19 @@ async function loadSharePost(postId) {
       <button class="btn btn-ghost btn-sm" onclick="navToProfile('${p.uid}')">Voir le profil</button>
     </div>
   `;
+
+  // hydrate la miniature réelle de façon async
+  if (p.videoUrl) {
+    fetchThumbnail(p.videoUrl).then(thumbUrl => {
+      const el = document.getElementById('share-thumb');
+      if (el && thumbUrl) {
+        el.innerHTML = `<img src="${thumbUrl}" alt="miniature" loading="lazy"/>
+          <div class="post-thumb-play">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
+          </div>`;
+      }
+    });
+  }
 
   container.querySelectorAll('[data-like]').forEach(btn => {
     btn.addEventListener('click', () => toggleLike(btn.dataset.like, btn.dataset.owner));
