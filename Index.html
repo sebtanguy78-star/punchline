@@ -1185,7 +1185,7 @@ async function loadTopPosts() {
         background:${isMe ? meBg : cardBg};
         border:1px solid ${isMe ? meBorder : cardBorder};
         border-radius:14px; padding:14px 16px; margin-bottom:10px; cursor:pointer;
-      " onclick="navToProfile('${p.uid}')">
+      " onclick="navigateTo('share', { postId: '${p.id}' })">
         <div style="font-size:20px;width:26px;text-align:center;flex-shrink:0;">
           ${medals[i] || `<span style="color:${greyColor};font-weight:700;font-size:13px">#${i+1}</span>`}
         </div>
