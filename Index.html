@@ -31,12 +31,55 @@
   }
   /* ── THEME JOUR ── */
   body.light {
-    --bg: #F5F5F0; --card: #FFFFFF; --card2: #EAEAE5; --border: #DCDCD7;
-    --white: #111111; --grey: #666; --grey2: #999;
+    --bg: #F7F7F2;
+    --card: #FFFFFF;
+    --card2: #EFEFEA;
+    --border: #E0E0D8;
+    --white: #111111;
+    --grey: #666666;
+    --grey2: #999999;
+    --yellow: #2563EB;
+    --funny: #D97706;
+    --smart: #2563EB;
+    --love: #DB2777;
+    --biz: #059669;
+    --danger: #DC2626;
   }
-  body.light html, body.light { background: #F5F5F0; }
-  body.light #app { box-shadow: 0 0 60px rgba(0,0,0,.08); }
-  body.light .topbar, body.light .bottom-nav { background: #F5F5F0; }
+  body.light, body.light html { background: #F7F7F2; color: #111111; }
+  body.light #app { background: #F7F7F2; box-shadow: 0 0 40px rgba(0,0,0,.08); }
+  body.light .topbar { background: #F7F7F2; border-bottom-color: #E0E0D8; }
+  body.light .bottom-nav { background: #F7F7F2; border-top-color: #E0E0D8; }
+  body.light .card { background: #FFFFFF; border-color: #E0E0D8; }
+  body.light input, body.light textarea { background: #EFEFEA; border-color: #E0E0D8; color: #111; }
+  body.light .add-post-sheet { background: #FFFFFF; border-top-color: #E0E0D8; }
+  body.light .modal-box { background: #FFFFFF; border-color: #E0E0D8; }
+  body.light .modal { background: rgba(0,0,0,.4); }
+  body.light .like-btn { background: none; color: #111; border-color: #E0E0D8; }
+  body.light .like-btn.liked { border-color: #2563EB; color: #2563EB; background: rgba(37,99,235,.07); }
+  body.light .btn-primary { background: #2563EB; color: #FFFFFF; }
+  body.light .btn-primary:hover { background: #1D4ED8; }
+  body.light .btn-ghost { color: #111; border-color: #E0E0D8; }
+  body.light .search-bar { background: #EFEFEA; border-color: #E0E0D8; }
+  body.light .search-results { background: #FFFFFF; border-color: #E0E0D8; }
+  body.light .search-result-item:hover { background: #F0F0EB; }
+  body.light .ranking-tab { color: #666; }
+  body.light .ranking-tab.active { color: #2563EB; border-bottom-color: #2563EB; }
+  body.light .ranking-tabs { border-bottom-color: #E0E0D8; }
+  body.light .score-bar-track { background: #E0E0D8; }
+  body.light .nav-btn { color: #999; }
+  body.light .nav-btn.active, body.light .nav-btn:hover { color: #2563EB; }
+  body.light .post-score { color: #111; }
+  body.light .logo span { color: #2563EB; }
+  body.light .level-badge { background: #EFEFEA; border-color: #E0E0D8; }
+  body.light .toast { background: #FFFFFF; border-color: #E0E0D8; color: #111; }
+  body.light .notif-badge { background: #2563EB; color: #fff; }
+  body.light .notif-bell-btn { background: #EFEFEA; border-color: #E0E0D8; color: #666; }
+  body.light .avatar-btn { background: #2563EB; color: #FFFFFF; }
+  body.light .profile-avatar { background: #2563EB; color: #FFFFFF; }
+  body.light .share-avatar { background: #2563EB; color: #FFFFFF; }
+  body.light .search-result-avatar { background: #2563EB; color: #FFFFFF; }
+  body.light .sheet-handle { background: #E0E0D8; }
+  body.light .overlay { background: rgba(0,0,0,.35); }
 
   /* ── RECHERCHE ── */
   .search-bar-wrap { padding: 10px 20px 0; }
@@ -577,7 +620,20 @@
   <div id="screen-ranking" class="screen">
     <div class="topbar">
       <img src="assets/logo.png" alt="Punchline" class="logo-img"/>
-      <span class="text-grey text-sm">Top Punchlineurs</span>
+      <span class="text-grey text-sm">Classement</span>
+    </div>
+    <div class="search-bar-wrap">
+      <div class="search-wrap">
+        <div class="search-bar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;color:var(--grey);flex-shrink:0;"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+          <input type="text" id="search-input" placeholder="Rechercher un pseudo..." oninput="handleSearch()" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+        </div>
+        <div class="search-results" id="search-results" style="display:none;"></div>
+      </div>
+    </div>
+    <div class="ranking-tabs">
+      <button class="ranking-tab active" id="tab-users" onclick="switchRankingTab('users')">Top Punchlineurs</button>
+      <button class="ranking-tab" id="tab-posts" onclick="switchRankingTab('posts')">Top Posts</button>
     </div>
     <div id="ranking-list" style="padding: 16px 20px 80px;"></div>
   </div>
