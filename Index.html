@@ -45,7 +45,7 @@
     --biz: #059669;
     --danger: #DC2626;
   }
-  body.light, body.light html { background: #F7F7F2; color: #111111; }
+  body.light, body.light html, html.light { background: #F7F7F2; color: #111111; }
   body.light #app { background: #F7F7F2; box-shadow: 0 0 40px rgba(0,0,0,.08); }
   body.light .topbar { background: #F7F7F2; border-bottom-color: #E0E0D8; }
   body.light .bottom-nav { background: #F7F7F2; border-top-color: #E0E0D8; }
@@ -110,9 +110,17 @@
   body.light .notif-item-time { color: #888; }
   .ranking-card { background: var(--card); border: 1px solid var(--border); }
   .ranking-card-me { background: rgba(245,245,0,.06) !important; border-color: rgba(245,245,0,.25) !important; }
-  body.light .ranking-card { background: #F5F0E8; border-color: #E0D8CC; }
+  body.light .ranking-card { background: #FFFFFF; border-color: #E0E0D8; }
   body.light .ranking-card-me { background: rgba(37,99,235,.06) !important; border-color: rgba(37,99,235,.35) !important; }
   body.light .loading-text { color: #999; }
+
+  /* ── MENTIONS LÉGALES ── */
+  .legal-footer {
+    padding: 28px 20px 16px; text-align: center; border-top: 1px solid var(--border); margin-top: 20px;
+  }
+  .legal-footer p { font-size: 11px; color: var(--grey2); line-height: 1.8; }
+  .legal-footer a { color: var(--grey); text-decoration: underline; font-size: 11px; }
+  .legal-footer strong { color: var(--grey); font-size: 12px; display: block; margin-bottom: 4px; }
 
   /* ── RECHERCHE ── */
   .search-bar-wrap { padding: 10px 20px 0; }
@@ -170,16 +178,16 @@
   /* ── DATE POST ── */
   .post-date { font-size: 11px; color: var(--grey2); position: absolute; top: 12px; right: 14px; font-family: 'Inter', sans-serif; }
 
-  /* ── TOGGLE LIGHT SWITCH ── */
+  /* ── BASE ── */
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   html {
-    height: 100%; background: #000;
+    height: 100%; background: var(--bg);
     touch-action: pan-y;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
   }
   body {
-    height: 100%; background: #000; color: var(--white); font-family: 'Inter', sans-serif;
+    height: 100%; background: var(--bg); color: var(--white); font-family: 'Inter', sans-serif;
     overscroll-behavior: none;
     -webkit-user-select: none; user-select: none;
     display: flex; justify-content: center;
@@ -193,8 +201,8 @@
 
 
   /* ── LAYOUT ── */
-  .screen { display: none; min-height: 100vh; }
-  .screen.active { display: flex; flex-direction: column; }
+  .screen { display: none; min-height: 100vh; background: var(--bg); }
+  .screen.active { display: flex; flex-direction: column; background: var(--bg); }
 
   /* ── TOPBAR ── */
   .topbar {
@@ -604,6 +612,13 @@
     <div class="profile-posts">
       <div class="section-title">Mes punchlines</div>
       <div id="own-posts-list"></div>
+    <div class="legal-footer">
+      <strong>© 2025 Punchline App</strong>
+      <p>Tous droits réservés. Le contenu, le design et les fonctionnalités de cette application sont la propriété exclusive de Punchline App.</p>
+      <p style="margin-top:6px;">Les commentaires publiés par les utilisateurs restent leur propriété intellectuelle. Punchline App se réserve le droit de modérer ou supprimer tout contenu contraire aux conditions d'utilisation.</p>
+      <p style="margin-top:6px;">Hébergement : Netlify · Base de données : Firebase (Google)</p>
+      <p style="margin-top:8px;"><a href="/privacy.html">Politique de confidentialité</a></p>
+    </div>
     </div>
   </div>
 
