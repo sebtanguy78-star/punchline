@@ -108,7 +108,10 @@
   body.light .modal-title { color: #111; }
   body.light .notif-item-text { color: #111; }
   body.light .notif-item-time { color: #888; }
-  body.light .ranking-card { background: #FFFFFF !important; border-color: #E0E0D8 !important; }
+  .ranking-card { background: var(--card); border: 1px solid var(--border); }
+  .ranking-card-me { background: rgba(245,245,0,.06) !important; border-color: rgba(245,245,0,.25) !important; }
+  body.light .ranking-card { background: #FFFFFF; border-color: #E0E0D8; }
+  body.light .ranking-card-me { background: rgba(37,99,235,.06) !important; border-color: rgba(37,99,235,.35) !important; }
   body.light .loading-text { color: #999; }
 
   /* ── RECHERCHE ── */
@@ -1105,10 +1108,8 @@ async function loadRanking() {
       const dom = getDominantCat(u.cats || {});
       const isMe = currentUser && u.id === currentUser.uid;
       const isFollowing = (u.followers || []).includes(currentUser && currentUser.uid);
-      return `<div class="ranking-card" style="
+      return `<div class="ranking-card ${isMe ? 'ranking-card-me' : ''}" style="
         display:flex; align-items:center; gap:14px;
-        background:${isMe ? meBg : cardBg};
-        border:1px solid ${isMe ? meBorder : cardBorder};
         border-radius:14px; padding:14px 16px; margin-bottom:10px; cursor:pointer;
       " onclick="navToProfile('${u.id}')">
         <div style="font-size:22px; width:28px; text-align:center; flex-shrink:0;">
@@ -1188,10 +1189,8 @@ async function loadTopPosts() {
       const isMe = currentUser && p.uid === currentUser.uid;
       const dom = getDominantCat(p.cats || {});
       const catColor = CATS[dom].color;
-      return `<div style="
+      return `<div class="ranking-card ${isMe ? 'ranking-card-me' : ''}" style="
         display:flex; align-items:center; gap:12px;
-        background:${isMe ? meBg : cardBg};
-        border:1px solid ${isMe ? meBorder : cardBorder};
         border-radius:14px; padding:14px 16px; margin-bottom:10px; cursor:pointer;
       " onclick="navToPost('${p.id}')">
         <div style="font-size:20px;width:26px;text-align:center;flex-shrink:0;">
