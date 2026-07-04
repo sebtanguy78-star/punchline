@@ -229,16 +229,18 @@
     text-size-adjust: 100%;
   }
   body {
-    height: 100%; background: var(--bg); color: var(--white); font-family: 'Inter', sans-serif;
-    overscroll-behavior: none;
-    -webkit-user-select: none; user-select: none;
-    display: flex; justify-content: center;
-  }
+    height:100%; background: var(--bg); color: var(--white); font-family:'Inter',sans-serif;
+    overscroll-behavior:none;
+    -webkit-user-select:none; user-select:none;
+    display:block;
+    overflow-x:hidden;
+}
   input, textarea { -webkit-user-select: text; user-select: text; }
   #app {
-    width: 100%; max-width: 480px; min-height: 100vh; min-height: 100dvh;
+    width: 100%; max-width: 480px;
+    margin: 0 auto; min-height: 100vh; min-height: 100dvh;
     background: var(--bg); position: relative;
-    box-shadow: 0 0 60px rgba(0,0,0,.5);
+    box-shadow: none;
   }
 
 
