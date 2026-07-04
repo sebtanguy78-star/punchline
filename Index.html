@@ -196,6 +196,10 @@
   .profile-bio { font-size: 14px; color: var(--grey); margin-top: 10px; line-height: 1.5; font-style: italic; }
   .bio-edit-btn { font-size: 11px; color: var(--grey); background: none; border: none; cursor: pointer; margin-left: 6px; text-decoration: underline; }
 
+  /* ── SCREEN RANKING ── */
+  #screen-ranking { overflow-y: auto; }
+  #ranking-list { padding: 16px 20px 100px; }
+
   /* ── ONGLETS RANKING ── */
   .ranking-tabs { display: flex; border-bottom: 1px solid var(--border); margin: 0; }
   .ranking-tab {
@@ -217,7 +221,7 @@
 
   /* ── BASE ── */
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  html, body, #app, .screen.active { background: var(--bg); }
+  html, body, #app, .screen, .screen.active { background: var(--bg); }
   html {
     height: 100%; background: var(--bg);
     touch-action: pan-y;
@@ -726,7 +730,7 @@
       <button class="ranking-tab active" id="tab-users" onclick="switchRankingTab('users')">Top Punchlineurs</button>
       <button class="ranking-tab" id="tab-posts" onclick="switchRankingTab('posts')">Top Posts</button>
     </div>
-    <div id="ranking-list" style="padding: 16px 20px 80px; background: var(--bg);"></div>
+    <div id="ranking-list"></div>
   </div>
 
   <!-- ══ SCREEN SHARE (post public) ══ -->
