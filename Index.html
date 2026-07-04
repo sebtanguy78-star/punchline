@@ -108,10 +108,47 @@
   body.light .modal-title { color: #111; }
   body.light .notif-item-text { color: #111; }
   body.light .notif-item-time { color: #888; }
-  .ranking-card { background: var(--card); border: 1px solid var(--border); }
-  .ranking-card-me { background: rgba(245,245,0,.06) !important; border-color: rgba(245,245,0,.25) !important; }
-  body.light .ranking-card { background: #FFFFFF; border-color: #E0E0D8; }
-  body.light .ranking-card-me { background: rgba(37,99,235,.06) !important; border-color: rgba(37,99,235,.35) !important; }
+  /* ── CARTES CLASSEMENT ── */
+  .ranking-card {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 14px 16px; margin-bottom: 10px;
+    cursor: pointer; transition: opacity .15s;
+  }
+  .ranking-card:active { opacity: .75; }
+  .ranking-card-me { border-color: var(--yellow); }
+  .ranking-medal { font-size: 20px; width: 26px; text-align: center; flex-shrink: 0; }
+  .ranking-num { font-size: 13px; font-weight: 700; color: var(--grey); }
+  .ranking-avatar {
+    width: 40px; height: 40px; border-radius: 50%; background: var(--yellow);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 15px; color: #000; flex-shrink: 0; overflow: hidden;
+  }
+  body.light .ranking-avatar { color: #fff; }
+  .ranking-info { flex: 1; min-width: 0; }
+  .ranking-name { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 15px; color: var(--white); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ranking-me-tag { font-size: 11px; color: var(--yellow); font-weight: 600; }
+  .ranking-cat { font-size: 13px; margin-top: 2px; color: var(--grey); }
+  .ranking-score { text-align: right; flex-shrink: 0; }
+  .ranking-pts { font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 20px; color: var(--yellow); display: block; }
+  .ranking-pts-label { font-size: 10px; color: var(--grey); }
+  .ranking-follow-btn {
+    width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border);
+    background: none; color: var(--white); cursor: pointer; display: flex;
+    align-items: center; justify-content: center; flex-shrink: 0; transition: all .15s;
+  }
+  .ranking-follow-btn.following { border-color: var(--yellow); color: var(--yellow); background: rgba(245,245,0,.08); }
+  body.light .ranking-follow-btn.following { border-color: #2563EB; color: #2563EB; background: rgba(37,99,235,.08); }
+  .ranking-share-btn {
+    background: none; border: 1px solid var(--border); border-radius: 8px;
+    padding: 6px 10px; color: var(--grey); cursor: pointer; font-size: 14px;
+    flex-shrink: 0; transition: border-color .15s;
+  }
+  .ranking-post-body { flex: 1; min-width: 0; }
+  .ranking-post-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+  .ranking-post-author { font-size: 13px; font-weight: 500; color: var(--grey); }
+  .ranking-post-comment { font-size: 15px; font-weight: 500; color: var(--white); line-height: 1.4; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .new-post-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--yellow); flex-shrink: 0; }
   body.light .loading-text { color: #999; }
 
   /* ── MENTIONS LÉGALES ── */
@@ -1112,60 +1149,33 @@ async function loadRanking() {
       return;
     }
     const medals = ['🥇','🥈','🥉'];
-    const cardBg     = cv('--card');
-    const cardBorder = cv('--border');
-    const textColor  = cv('--white');
-    const greyColor  = cv('--grey');
-    const yellow     = cv('--yellow');
-    const meBg       = document.body.classList.contains('light') ? 'rgba(37,99,235,.06)' : 'rgba(245,245,0,.06)';
-    const meBorder   = document.body.classList.contains('light') ? 'rgba(37,99,235,.35)' : 'rgba(245,245,0,.25)';
-    const meColor    = document.body.classList.contains('light') ? '#2563EB' : '#F5F500';
     container.innerHTML = users.map((u, i) => {
       const dom = getDominantCat(u.cats || {});
       const isMe = currentUser && u.id === currentUser.uid;
-      const isFollowing = (u.followers || []).includes(currentUser && currentUser.uid);
-      return `<div class="ranking-card ${isMe ? 'ranking-card-me' : ''}" style="
-        display:flex; align-items:center; gap:14px;
-        border-radius:14px; padding:14px 16px; margin-bottom:10px; cursor:pointer;
-      " onclick="navToProfile('${u.id}')">
-        <div style="font-size:22px; width:28px; text-align:center; flex-shrink:0;">
-          ${medals[i] || `<span style="color:${greyColor};font-weight:700;font-size:14px">#${i+1}</span>`}
-        </div>
-        <div style="width:42px;height:42px;border-radius:50%;background:${yellow};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;color:${document.body.classList.contains('light') ? '#fff' : '#000'};flex-shrink:0;overflow:hidden;">
-          ${avatarInnerHTML(u)}
-        </div>
-        <div style="flex:1; min-width:0;">
-          <div style="font-weight:700;font-size:15px;color:${textColor};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:6px;">
-            ${hasNewPost(u) ? `<span style="width:8px;height:8px;border-radius:50%;background:${meColor};flex-shrink:0;" title="Nouvelle punchline"></span>` : ''}
-            <span style="overflow:hidden;text-overflow:ellipsis;">${escHtml(u.name || '?')}</span>
-            ${isMe ? `<span style="color:${meColor};font-size:12px;">• toi</span>` : ''}
+      const isFollowing = currentUser && (u.followers || []).includes(currentUser.uid);
+      return `<div class="ranking-card${isMe ? ' ranking-card-me' : ''}" onclick="navToProfile('${u.id}')">
+        <div class="ranking-medal">${medals[i] || `<span class="ranking-num">#${i+1}</span>`}</div>
+        <div class="ranking-avatar">${avatarInnerHTML(u)}</div>
+        <div class="ranking-info">
+          <div class="ranking-name">
+            ${hasNewPost(u) ? '<span class="new-post-dot"></span>' : ''}
+            <span>${escHtml(u.name || '?')}</span>
+            ${isMe ? '<span class="ranking-me-tag">toi</span>' : ''}
           </div>
-          <div style="display:flex;align-items:center;gap:6px;margin-top:3px;">
-            <span style="font-size:14px;" title="${CATS[dom].label}">${CATS[dom].label.split(' ')[0]}</span>
-          </div>
+          <div class="ranking-cat">${CATS[dom].label.split(' ')[0]}</div>
         </div>
-        <div style="text-align:right;flex-shrink:0;">
-          <div style="font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:22px;color:${yellow};">${u.score || 0}</div>
-          <div style="font-size:11px;color:${greyColor};">pts</div>
+        <div class="ranking-score">
+          <span class="ranking-pts">${u.score || 0}</span>
+          <span class="ranking-pts-label">pts</span>
         </div>
-        ${(!isMe && currentUser) ? `<button onclick="event.stopPropagation(); quickFollow('${u.id}', this)" data-following="${isFollowing ? '1' : '0'}" style="
-          background:${isFollowing ? (document.body.classList.contains('light') ? 'rgba(37,99,235,.1)' : 'rgba(245,245,0,.12)') : 'none'};
-          border:1px solid ${isFollowing ? yellow : cardBorder};
-          border-radius:8px; width:32px; height:32px; flex-shrink:0; cursor:pointer;
-          color:${isFollowing ? yellow : textColor};
-          font-size:16px; font-weight:700; transition:all .15s; display:flex; align-items:center; justify-content:center;
-        " title="${isFollowing ? 'Abonné' : 'Suivre'}">${isFollowing ? `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M2 20c0-4 3.6-7 8-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="18" cy="17" r="4.5" fill="currentColor" opacity=".15"/><path d="M15.5 17l1.5 1.5 2.5-2.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>` : `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M2 20c0-4 3.6-7 8-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M17 14v6M14 17h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`}</button>` : ''}
-        <button onclick="event.stopPropagation(); shareUserProfile('${u.id}', '${escHtml(u.name || '')}')" style="
-          background:none; border:1px solid ${cardBorder}; border-radius:8px; padding:7px 10px;
-          color:${greyColor}; cursor:pointer; font-size:16px; flex-shrink:0; transition:all .15s;
-        " title="Partager le profil">🔗</button>
+        ${(!isMe && currentUser) ? `<button class="ranking-follow-btn${isFollowing ? ' following' : ''}" data-following="${isFollowing ? '1' : '0'}" onclick="event.stopPropagation(); quickFollow('${u.id}', this)" title="${isFollowing ? 'Abonné' : 'Suivre'}">${isFollowing ? `<svg viewBox="0 0 24 24" width="18" height="18" fill="none"><circle cx="10" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M2 20c0-4 3.6-7 8-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="18" cy="17" r="4.5" fill="currentColor" opacity=".15"/><path d="M15.5 17l1.5 1.5 2.5-2.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>` : `<svg viewBox="0 0 24 24" width="18" height="18" fill="none"><circle cx="10" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M2 20c0-4 3.6-7 8-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M17 14v6M14 17h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`}</button>` : ''}
+        <button class="ranking-share-btn" onclick="event.stopPropagation(); shareUserProfile('${u.id}', '${escHtml(u.name || '')}')" title="Partager">🔗</button>
       </div>`;
     }).join('');
   } catch(e) {
     container.innerHTML = '<div class="empty-state"><p>Erreur de chargement.</p></div>';
   }
 }
-
 // ══ ONGLETS CLASSEMENT ══
 let currentRankingTab = 'users';
 window.switchRankingTab = function(tab) {
@@ -1189,49 +1199,33 @@ async function loadTopPosts() {
       return;
     }
     const uids = [...new Set(posts.map(p => p.uid))];
+    const usersSnaps = await Promise.all(uids.map(uid => getDoc(doc(db, 'users', uid))));
     const usersMap = {};
-    const uSnaps = await Promise.all(uids.map(uid => getDoc(doc(db, 'users', uid))));
-    uSnaps.forEach(s => { if (s.exists()) usersMap[s.id] = s.data(); });
+    usersSnaps.forEach(s => { if (s.exists()) usersMap[s.id] = s.data(); });
     const medals = ['🥇','🥈','🥉'];
-    const cardBg     = cv('--card');
-    const cardBorder = cv('--border');
-    const textColor  = cv('--white');
-    const greyColor  = cv('--grey');
-    const yellow     = cv('--yellow');
-    const meBg       = document.body.classList.contains('light') ? 'rgba(37,99,235,.06)' : 'rgba(245,245,0,.06)';
-    const meBorder   = document.body.classList.contains('light') ? 'rgba(37,99,235,.35)' : 'rgba(245,245,0,.25)';
     container.innerHTML = posts.map((p, i) => {
       const u = usersMap[p.uid] || { name: '?' };
       const isMe = currentUser && p.uid === currentUser.uid;
       const dom = getDominantCat(p.cats || {});
-      const catColor = CATS[dom].color;
-      return `<div class="ranking-card ${isMe ? 'ranking-card-me' : ''}" style="
-        display:flex; align-items:center; gap:12px;
-        border-radius:14px; padding:14px 16px; margin-bottom:10px; cursor:pointer;
-      " onclick="navToPost('${p.id}')">
-        <div style="font-size:20px;width:26px;text-align:center;flex-shrink:0;">
-          ${medals[i] || `<span style="color:${greyColor};font-weight:700;font-size:13px">#${i+1}</span>`}
-        </div>
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:13px;font-weight:500;color:${greyColor};margin-bottom:5px;display:flex;align-items:center;gap:6px;">
-            <span>${escHtml(u.name || '?')}</span>
-            <span style="background:${catColor}22;color:${catColor};padding:1px 7px;border-radius:10px;font-size:11px;">${CATS[dom].label.split(' ')[0]}</span>
+      return `<div class="ranking-card${isMe ? ' ranking-card-me' : ''}" onclick="navToPost('${p.id}')">
+        <div class="ranking-medal">${medals[i] || `<span class="ranking-num">#${i+1}</span>`}</div>
+        <div class="ranking-post-body">
+          <div class="ranking-post-meta">
+            <span class="ranking-post-author">${escHtml(u.name || '?')}</span>
+            <span class="ranking-cat">${CATS[dom].label.split(' ')[0]}</span>
           </div>
-          <div style="font-size:15px;font-weight:600;line-height:1.4;color:${textColor};overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">
-            "${escHtml((p.comment || '').slice(0, 80))}${p.comment && p.comment.length > 80 ? '…' : ''}"
-          </div>
+          <div class="ranking-post-comment">"${escHtml((p.comment || '').slice(0, 80))}${p.comment && p.comment.length > 80 ? '…' : ''}"</div>
         </div>
-        <div style="text-align:right;flex-shrink:0;padding-left:8px;">
-          <div style="font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:20px;color:${yellow};">${p.score || 0}</div>
-          <div style="font-size:10px;color:${greyColor};">pts</div>
+        <div class="ranking-score">
+          <span class="ranking-pts">${p.score || 0}</span>
+          <span class="ranking-pts-label">pts</span>
         </div>
       </div>`;
     }).join('');
   } catch(e) {
-    container.innerHTML = `<div class="empty-state"><p>Erreur de chargement.<br><small style="color:var(--danger)">${escHtml(e.message)}</small></p></div>`;
+    container.innerHTML = `<div class="empty-state"><p>Erreur : ${escHtml(e.message)}</p></div>`;
   }
 }
-
 // ══ RECHERCHE DE PSEUDO ══
 let searchTimeout = null;
 window.handleSearch = function() {
@@ -1346,9 +1340,7 @@ window.quickFollow = async function(targetUid, btnEl) {
       ]);
       btnEl.dataset.following = '0';
       btnEl.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M2 20c0-4 3.6-7 8-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M17 14v6M14 17h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`;
-      btnEl.style.background = 'none';
-      btnEl.style.borderColor = border;
-      btnEl.style.color = textColor;
+      btnEl.classList.remove('following');
       btnEl.title = 'Suivre';
       toast('Abonnement retiré.');
     } else {
@@ -1359,9 +1351,7 @@ window.quickFollow = async function(targetUid, btnEl) {
       createFollowNotification(targetUid, currentUser.uid);
       btnEl.dataset.following = '1';
       btnEl.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M2 20c0-4 3.6-7 8-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="18" cy="17" r="4.5" fill="currentColor" opacity=".15"/><path d="M15.5 17l1.5 1.5 2.5-2.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-      btnEl.style.background = isLight ? 'rgba(37,99,235,.1)' : 'rgba(245,245,0,.12)';
-      btnEl.style.borderColor = yellow;
-      btnEl.style.color = yellow;
+      btnEl.classList.add('following');
       btnEl.title = 'Abonné';
       toast('✓ Abonné !');
     }
