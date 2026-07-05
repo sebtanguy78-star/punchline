@@ -569,6 +569,15 @@ body.light .notif-item.unread { background: rgba(37,99,235,.04); }
 ═══════════════════════════════════ -->
 <div id="app">
 
+  <!-- SPLASH : affiché pendant le chargement de Firebase Auth -->
+  <div id="splash" style="position:absolute;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999;">
+    <div style="text-align:center;">
+      <img src="assets/logo.png" alt="Punchline" style="width:180px;height:auto;margin-bottom:20px;"/>
+      <div style="width:22px;height:22px;border:2px solid var(--border);border-top-color:var(--yellow);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto;"></div>
+    </div>
+  </div>
+
+
   <!-- TOPBAR -->
   <div id="topbar" style="display:none">
     <img src="assets/logo.png" alt="Punchline" class="topbar-logo"/>
@@ -596,7 +605,7 @@ body.light .notif-item.unread { background: rgba(37,99,235,.04); }
   </div>
 
   <!-- AUTH -->
-  <div id="page-auth" class="page active">
+  <div id="page-auth" class="page">
     <div style="padding-bottom:0">
       <img src="assets/logo.png" alt="Punchline" class="auth-logo-img"/>
       <p class="auth-tagline">Ton commentaire, ton art.</p>
@@ -1020,6 +1029,10 @@ window.doLogout = async function() {
 };
 
 onAuthStateChanged(auth, async user => {
+  // Cacher le splash dès que Firebase a répondu
+  const splash = document.getElementById('splash');
+  if (splash) splash.style.display = 'none';
+
   if (!user) { CU=null; CUD=null; showPage('auth', false); history=['auth']; if(notifUnsub){notifUnsub();notifUnsub=null;} return; }
   CU = user;
   // Vérifier si profil existe
