@@ -100,6 +100,14 @@ input, textarea, select { -webkit-user-select: text; user-select: text; }
   z-index: 10;
 }
 .topbar-logo { height: 24px; width: auto; display: block; }
+.story-scroll { display: flex; gap: 14px; overflow-x: auto; padding: 8px 16px 12px; scrollbar-width: none; }
+.story-scroll::-webkit-scrollbar { display: none; }
+.story-item { display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; flex-shrink: 0; }
+.story-ring { width: 52px; height: 52px; border-radius: 50%; padding: 2px; background: linear-gradient(135deg, var(--yellow), #ff9500); }
+.story-ring.is-me { background: linear-gradient(135deg, var(--smart), var(--love)); }
+.story-avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--card); border: 2px solid var(--bg); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px; color: var(--ink); overflow: hidden; font-family: 'Space Grotesk', sans-serif; }
+.story-name { font-size: 10px; font-weight: 600; color: var(--ink2); max-width: 52px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.story-score { font-size: 10px; font-weight: 800; color: var(--yellow); font-family: 'Space Grotesk', sans-serif; }
 .topbar-actions { display: flex; align-items: center; gap: 8px; }
 .icon-btn {
   width: 36px; height: 36px; border-radius: 50%;
@@ -294,19 +302,9 @@ body.light .cat-biz   { background: rgba(6,95,70,.1); }
 .post-score-wrap { margin-bottom: 10px; }
 .post-score-num { font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 42px; color: var(--yellow); line-height: 1; }
 .post-score-label { font-size: 10px; color: var(--ink3); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
-.post-comment { font-size: 17px; font-weight: 500; line-height: 1.5; margin: 12px 0; color: var(--ink); }
+.post-comment { font-size: 18px; font-weight: 700; line-height: 1.45; margin: 0 0 12px 0; color: var(--ink); font-family: 'Space Grotesk', sans-serif; letter-spacing: -.2px; }
 .post-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
-.like-btn {
-  display: flex; align-items: center; gap: 6px;
-  background: none; border: 1px solid var(--border);
-  border-radius: 8px; padding: 7px 13px;
-  color: var(--ink); cursor: pointer; font-size: 13px;
-  font-family: 'Inter', sans-serif; font-weight: 600;
-  transition: all .15s;
-}
-.like-btn.liked { border-color: var(--yellow); color: var(--yellow); background: rgba(245,245,0,.07); }
-body.light .like-btn.liked { background: rgba(37,99,235,.07); }
-.like-btn svg { width: 14px; height: 14px; }
+.like-btn { display: none !important; }
 .cat-vote-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
 .cat-vote-btn {
   padding: 5px 11px; border-radius: 20px; border: 1px solid transparent;
@@ -571,8 +569,11 @@ body.light .notif-item.unread { background: rgba(37,99,235,.04); }
 
 
   <!-- TOPBAR -->
-  <div id="topbar" style="display:none">
-    <img src="assets/logo.png" alt="Punchline" class="topbar-logo"/>
+  <div id="topbar" style="display:none;position:relative;">
+    <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);">
+      <img src="assets/logo.png" alt="Punchline" class="topbar-logo"/>
+    </div>
+    <div style="width:36px;"></div>
     <div class="topbar-actions">
       <div class="icon-btn" id="notif-badge-wrap" onclick="openNotifications()" style="display:none">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -589,7 +590,7 @@ body.light .notif-item.unread { background: rgba(37,99,235,.04); }
     <div style="padding:14px 16px 4px;">
       <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--ink3);">Top Punchlineurs</p>
     </div>
-    <div id="home-top-users" style="padding:0 16px 4px;display:flex;gap:10px;overflow-x:auto;padding-bottom:12px;"></div>
+    <div id="home-top-users" class="story-scroll"></div>
     <div style="padding:0 16px 4px;">
       <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--ink3);">Top Posts</p>
     </div>
@@ -652,7 +653,7 @@ body.light .notif-item.unread { background: rgba(37,99,235,.04); }
     <div class="section-label">Mes punchlines</div>
     <div class="posts-list" id="own-posts"></div>
     <div class="legal">
-      <strong>© 2026 Punchline App</strong>
+      <strong>© 2026 Punchline App — Mis à jour juillet 2026</strong>
       <p>Tous droits réservés. Le contenu et les fonctionnalités de cette application sont la propriété exclusive de Punchline App.<br/>Les commentaires publiés restent la propriété intellectuelle de leurs auteurs.</p>
       <p style="margin-top:6px;"><a href="/privacy.html">Politique de confidentialité</a></p>
     </div>
@@ -1115,7 +1116,7 @@ function renderProfile() {
   $('own-stat-following').textContent = (d.following||[]).length;
   $('own-stat-score').textContent = d.score||0;
   const dom = domCat(d.cats);
-  $('own-cat-badge').innerHTML = catPill(dom);
+  $('own-cat-badge').innerHTML = (d.score||0)>0 ? catPill(dom) : '';
   $('own-score-bars').innerHTML = scoreBarsHTML(d.cats, d.score||0);
   $('topbar-avatar').innerHTML = avatarHTML(d);
 }
@@ -1152,7 +1153,7 @@ window.openPubProfile = async function(uid) {
   $('pub-stat-followers').textContent = (u.followers||[]).length;
   $('pub-stat-score').textContent = u.score||0;
   const dom = domCat(u.cats);
-  $('pub-cat-badge').innerHTML = catPill(dom);
+  $('pub-cat-badge').innerHTML = (u.score||0)>0 ? catPill(dom) : '';
   $('pub-score-bars').innerHTML = scoreBarsHTML(u.cats, u.score||0);
   const fb = $('follow-btn');
   const isF = CU && (u.followers||[]).includes(CU.uid);
@@ -1266,8 +1267,8 @@ function postCardHTML(p, isOwn) {
       <div class="post-score-num" id="sc-${p.id}">${p.score||0}</div>
       <div class="post-score-label">points</div>
     </div>
-    ${thumbHTML}
     <div class="post-comment">"${esc(p.comment||'')}"</div>
+    ${thumbHTML}
     <div class="cat-vote-row">${catBtns}</div>
     <div class="post-actions">
       <button class="like-btn${liked?' liked':''}" data-like="${p.id}" data-owner="${p.uid}" ${isOwn?'disabled':''}>
@@ -1461,8 +1462,8 @@ window.openSharePost = async function(pid) {
   </div>
   <div class="t-score" style="margin-bottom:2px">${p.score||0}</div>
   <div class="t-small" style="margin-bottom:14px">points</div>
-  ${thumbHTML}
   <div class="post-comment" style="font-size:19px">"${esc(p.comment||'')}"</div>
+  ${thumbHTML}
   <div class="cat-vote-row" id="s-catvote">${catBtns}</div>
   <div class="post-actions" style="margin-top:14px">
     <button class="like-btn${liked?' liked':''}" id="s-like" ${isOwn?'disabled':''}>
@@ -1498,13 +1499,14 @@ async function loadHome() {
     try {
       const snap=await getDocs(query(collection(db,'users'),orderBy('score','desc')));
       const users=[]; snap.forEach(d=>users.push({id:d.id,...d.data()}));
-      uc.innerHTML=users.slice(0,8).map((u,i)=>{
-        const medals=['🥇','🥈','🥉'];
-        return `<div onclick="openPubProfile('${u.id}')" style="flex-shrink:0;text-align:center;cursor:pointer;padding:4px 8px;background:var(--card);border:1px solid var(--border);border-radius:12px;min-width:72px;">
-          <div style="font-size:16px;margin-bottom:2px">${medals[i]||''}</div>
-          <div class="avatar avatar-sm" style="margin:0 auto 4px;">${avatarHTML(u)}</div>
-          <div style="font-size:11px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:64px;">${esc(u.name||'?')}</div>
-          <div style="font-size:10px;color:var(--yellow);font-family:'Space Grotesk',sans-serif;font-weight:700;">${u.score||0}</div>
+      uc.innerHTML=users.slice(0,10).map((u,i)=>{
+        const isMe=CU&&u.id===CU.uid;
+        return `<div class="story-item" onclick="openPubProfile('${u.id}')">
+          <div class="story-ring${isMe?' is-me':''}">
+            <div class="story-avatar">${avatarHTML(u)}</div>
+          </div>
+          <div class="story-name">${esc(u.name||'?')}</div>
+          <div class="story-score">${u.score||0}pts</div>
         </div>`;
       }).join('');
     } catch{}
@@ -1539,14 +1541,16 @@ async function loadHome() {
         }
       }
       const catBtns=Object.entries(CATS).map(([k,c])=>`<button class="cat-vote-btn ${k}${myVote===k?' active':''}" data-cat="${k}" data-pid="${p.id}" data-owner="${p.uid}" ${isOwn?'disabled':''}>${c.label}</button>`).join('');
-      return `<div class="card post-card" id="hpc-${p.id}">
+      const hdate = fmtDate(p.createdAt);
+      return `<div class="card post-card" id="hpc-${p.id}" style="position:relative;">
+        ${hdate ? `<div class="post-date">${hdate}</div>` : ''}
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;cursor:pointer;" onclick="openPubProfile('${p.uid}')">
           <div class="avatar avatar-sm">${avatarHTML(u)}</div>
           <div><span style="font-weight:700;font-size:13px">${esc(u.name||'?')}</span> ${catPill(dom)}</div>
         </div>
         <div class="post-score-wrap"><div class="post-score-num" id="hsc-${p.id}">${p.score||0}</div><div class="post-score-label">points</div></div>
-        ${thumbHTML}
         <div class="post-comment">"${esc(p.comment||'')}"</div>
+        ${thumbHTML}
         <div class="cat-vote-row">${catBtns}</div>
         <div class="post-actions">
           <button class="like-btn${liked?' liked':''}" data-like="${p.id}" data-owner="${p.uid}" ${isOwn?'disabled':''}>
