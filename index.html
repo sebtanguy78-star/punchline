@@ -94,12 +94,13 @@ input, textarea, select { -webkit-user-select: text; user-select: text; }
 #topbar {
   flex-shrink: 0;
   display: flex; align-items: center; justify-content: space-between;
-  padding: 12px 16px;
+  padding: 8px 16px;
   background: var(--bg);
   border-bottom: 1px solid var(--border);
   z-index: 10;
+  min-height: 88px;
 }
-.topbar-logo { height: 24px; width: auto; display: block; }
+.topbar-logo { height: 72px; width: auto; display: block; }
 .story-scroll { display: flex; gap: 14px; overflow-x: auto; padding: 8px 16px 12px; scrollbar-width: none; }
 .story-scroll::-webkit-scrollbar { display: none; }
 .story-item { display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; flex-shrink: 0; }
@@ -320,6 +321,8 @@ body.light .cat-biz   { background: rgba(6,95,70,.1); }
 .cat-vote-btn.active.smart { background: rgba(0,212,255,.12); }
 .cat-vote-btn.active.love  { background: rgba(255,78,138,.12); }
 .cat-vote-btn.active.biz   { background: rgba(0,229,160,.12); }
+body.light .cat-vote-btn.active.biz   { background: rgba(6,95,70,.1); }
+.cat-vote-btn.top-cat { font-weight: 800; box-shadow: 0 0 0 2px currentColor; }
 body.light .cat-vote-btn.active.funny { background: rgba(180,83,9,.1); }
 body.light .cat-vote-btn.active.smart { background: rgba(29,78,216,.1); }
 body.light .cat-vote-btn.active.love  { background: rgba(190,24,93,.1); }
@@ -1451,14 +1454,20 @@ window.openSharePost = async function(pid) {
       thumbHTML=`<a href="${esc(p.videoUrl)}" target="_blank" rel="noopener" style="display:block;text-decoration:none;"><div class="thumb-wrap" id="share-thumb">${net}</div></a>`;
     }
   }
+  // Catégorie la plus sélectionnée (surbrillance)
+  const catTotals = p.cats || {};
+  const topCat = Object.entries(catTotals).sort((a,b)=>b[1]-a[1])[0]?.[0] || null;
+  const sdate = fmtDate(p.createdAt);
   const catBtns=Object.entries(CATS).map(([k,cv2])=>{
     const mv=(CU&&(p.catVotes||{})[CU.uid]);
-    return `<button class="cat-vote-btn ${k}${mv===k?' active':''}" data-scat="${k}" data-spid="${pid}" data-sowner="${p.uid}" ${isOwn?'disabled':''}>${cv2.label}</button>`;
+    const isTop = k===topCat && (catTotals[k]||0)>0;
+    return `<button class="cat-vote-btn ${k}${mv===k?' active':''}${isTop?' top-cat':''}" data-scat="${k}" data-spid="${pid}" data-sowner="${p.uid}" ${isOwn?'disabled':''}>${cv2.label}${isTop?' ✦':''}</button>`;
   }).join('');
   c.innerHTML=`<div class="share-author" onclick="openPubProfile('${p.uid}')">
     <div class="avatar avatar-md">${avatarHTML(u)}</div>
     <div><div class="share-author-name">${esc(u.name||'?')}</div>
     <div class="share-author-cat">${catPill(dom)}</div></div>
+    ${sdate?`<div style="margin-left:auto;font-size:11px;color:var(--ink3);">${sdate}</div>`:''}
   </div>
   <div class="t-score" style="margin-bottom:2px">${p.score||0}</div>
   <div class="t-small" style="margin-bottom:14px">points</div>
@@ -1466,10 +1475,6 @@ window.openSharePost = async function(pid) {
   ${thumbHTML}
   <div class="cat-vote-row" id="s-catvote">${catBtns}</div>
   <div class="post-actions" style="margin-top:14px">
-    <button class="like-btn${liked?' liked':''}" id="s-like" ${isOwn?'disabled':''}>
-      <svg viewBox="0 0 14 14" fill="${liked?'currentColor':'none'}" stroke="currentColor" stroke-width="1.5"><path d="M7 12S1.5 8.3 1.5 4.7a3 3 0 0 1 5.5-1.6 3 3 0 0 1 5.5 1.6C12.5 8.3 7 12 7 12z"/></svg>
-      <span id="s-likes">${p.likes||0}</span>
-    </button>
     <button class="btn btn-ghost btn-sm" onclick="sharePost('${pid}')">Partager</button>
     <button class="btn btn-ghost btn-sm" onclick="openPubProfile('${p.uid}')">Voir le profil</button>
   </div>`;
@@ -1497,8 +1502,16 @@ async function loadHome() {
   if (uc) {
     uc.innerHTML='';
     try {
-      const snap=await getDocs(query(collection(db,'users'),orderBy('score','desc')));
-      const users=[]; snap.forEach(d=>users.push({id:d.id,...d.data()}));
+      // Afficher uniquement les users que je suis (following)
+      const myFollowing = CUD?.following || [];
+      let users = [];
+      if (myFollowing.length > 0) {
+        const usnaps = await Promise.all(myFollowing.map(id=>getDoc(doc(db,'users',id))));
+        usnaps.forEach(s=>{ if(s.exists()) users.push({id:s.id,...s.data()}); });
+        users.sort((a,b)=>(b.score||0)-(a.score||0));
+      }
+      if (!users.length) { uc.innerHTML='<div style="padding:4px 0;font-size:12px;color:var(--ink3);">Suis des punchlineurs pour les voir ici.</div>'; }
+      else
       uc.innerHTML=users.slice(0,10).map((u,i)=>{
         const isMe=CU&&u.id===CU.uid;
         return `<div class="story-item" onclick="openPubProfile('${u.id}')">
