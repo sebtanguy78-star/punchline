@@ -94,11 +94,11 @@ input, textarea, select { -webkit-user-select: text; user-select: text; }
 #topbar {
   flex-shrink: 0;
   display: flex; align-items: center; justify-content: space-between;
-  padding: 8px 16px;
+  padding: 6px 16px;
   background: var(--bg);
   border-bottom: 1px solid var(--border);
   z-index: 10;
-  min-height: 88px;
+  min-height: 80px;
 }
 .topbar-logo { height: 72px; width: auto; display: block; }
 .topbar-logo-dark { display: block; }
@@ -108,18 +108,18 @@ body.light .topbar-logo-light { display: block; }
 .story-scroll { display: flex; gap: 14px; overflow-x: auto; padding: 8px 16px 12px; scrollbar-width: none; }
 .story-scroll::-webkit-scrollbar { display: none; }
 .story-item { display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; flex-shrink: 0; }
-.story-ring { width: 52px; height: 52px; border-radius: 50%; padding: 2px; background: linear-gradient(135deg, var(--yellow), #ff9500); }
+.story-ring { width: 70px; height: 70px; border-radius: 50%; padding: 2.5px; background: linear-gradient(135deg, var(--yellow), #ff9500); }
 .story-ring.is-me { background: linear-gradient(135deg, var(--smart), var(--love)); }
-.story-avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--card); border: 2px solid var(--bg); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px; color: var(--ink); overflow: hidden; font-family: 'Space Grotesk', sans-serif; }
-.story-name { font-size: 10px; font-weight: 600; color: var(--ink2); max-width: 52px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.story-avatar { width: 65px; height: 65px; border-radius: 50%; background: var(--card2); border: 2.5px solid var(--bg); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 20px; color: var(--ink); overflow: hidden; font-family: 'Space Grotesk', sans-serif; }
+.story-name { font-size: 11px; font-weight: 600; color: var(--ink2); max-width: 70px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cat-tabs { display: flex; gap: 8px; padding: 4px 16px 12px; overflow-x: auto; scrollbar-width: none; }
 .cat-tabs::-webkit-scrollbar { display: none; }
 .cat-tab {
   display: inline-flex; align-items: center; gap: 5px;
-  padding: 7px 14px; border-radius: 20px; border: 1px solid var(--border);
-  background: none; cursor: pointer; font-size: 13px; font-weight: 600;
+  padding: 8px 16px; border-radius: 20px; border: 1.5px solid var(--border);
+  background: none; cursor: pointer; font-size: 13px; font-weight: 700;
   font-family: 'Inter', sans-serif; color: var(--ink2); white-space: nowrap;
-  transition: all .15s; flex-shrink: 0;
+  transition: all .15s; flex-shrink: 0; letter-spacing: .1px;
 }
 .cat-tab.active-funny { border-color: var(--funny); color: var(--funny); background: rgba(245,245,0,.1); }
 .cat-tab.active-smart { border-color: var(--smart); color: var(--smart); background: rgba(0,212,255,.1); }
@@ -235,10 +235,12 @@ body.light .btn-primary { color: #fff; }
    CARD
 ══════════════════════════════════════ */
 .card {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 16px;
+  background: var(--card); border: none;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0; padding: 16px;
 }
-.card + .card { margin-top: 10px; }
+.card + .card { margin-top: 0; }
+.posts-list .card:first-child { border-top: 1px solid var(--border); }
 
 /* ══════════════════════════════════════
    AVATAR
@@ -323,10 +325,14 @@ body.light .cat-biz   { background: rgba(6,95,70,.1); }
   position: absolute; top: 14px; right: 14px;
   font-size: 10px; color: var(--ink3);
 }
-.post-score-wrap { margin-bottom: 10px; }
-.post-score-num { font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 42px; color: var(--yellow); line-height: 1; }
-.post-score-label { font-size: 10px; color: var(--ink3); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+.post-score-wrap { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
+.post-score-num { font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 28px; color: var(--yellow); line-height: 1; }
+.post-score-label { font-size: 11px; color: var(--ink3); font-weight: 600; }
 .post-comment { font-size: 18px; font-weight: 700; line-height: 1.45; margin: 0 0 12px 0; color: var(--ink); font-family: 'Space Grotesk', sans-serif; letter-spacing: -.2px; }
+.post-author-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.post-author-name { font-weight: 700; font-size: 14px; color: var(--ink); }
+.post-author-cat { margin-left: auto; }
+.post-score-inline { font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 13px; color: var(--yellow); margin-left: 4px; }
 .post-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
 .like-btn { display: none !important; }
 .cat-vote-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
@@ -614,13 +620,7 @@ body.light .notif-item.unread { background: rgba(37,99,235,.04); }
 
   <!-- HOME (feed) -->
   <div id="page-home" class="page">
-    <div style="padding:14px 16px 4px;">
-      <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--ink3);">Top Punchlineurs</p>
-    </div>
     <div id="home-top-users" class="story-scroll"></div>
-    <div style="padding:0 16px 4px;">
-      <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--ink3);">Top Posts</p>
-    </div>
     <div class="cat-tabs" id="cat-tabs">
       <button class="cat-tab active-all" onclick="filterCat('all')">🔥 Tout</button>
       <button class="cat-tab" onclick="filterCat('funny')">Goat</button>
