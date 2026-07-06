@@ -1426,26 +1426,47 @@ window.confirmDelete = async function() {
 
 /* ── MINIATURES ── */
 async function fetchThumb(url) {
-  if (thumbCache[url]!==undefined) return thumbCache[url];
+  if (thumbCache[url] !== undefined) return thumbCache[url];
   try {
-    const r = await fetch(`/.netlify/functions/oembed?url=${encodeURIComponent(url)}`);
+    // Timeout de 5s pour éviter les requêtes qui bloquent indéfiniment
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    const r = await fetch(
+      `/.netlify/functions/oembed?url=${encodeURIComponent(url)}`,
+      { signal: controller.signal }
+    );
+    clearTimeout(timeout);
     const d = await r.json();
-    thumbCache[url] = d.thumbnail_url||null;
-  } catch { thumbCache[url]=null; }
+    thumbCache[url] = d.thumbnail_url || null;
+  } catch {
+    thumbCache[url] = null;
+  }
   return thumbCache[url];
 }
 
 async function hydrateThumb(container, posts) {
-  for (const p of posts) {
-    if (!p.videoUrl||(p.videoUrl.includes('instagram.com'))) continue;
+  // Filtrer les posts qui ont besoin d'une miniature
+  const toFetch = posts.filter(p => p.videoUrl && !p.videoUrl.includes('instagram.com'));
+  if (!toFetch.length) return;
+
+  // Lancer TOUS les fetches en parallèle
+  const results = await Promise.all(
+    toFetch.map(async p => {
+      const url = await fetchThumb(p.videoUrl);
+      return { p, url };
+    })
+  );
+
+  // Mettre à jour le DOM pour tous les résultats
+  for (const { p, url } of results) {
+    if (!url) continue;
     const el = container.querySelector(`[data-thumb="${p.id}"]`);
     if (!el) continue;
-    const url = await fetchThumb(p.videoUrl);
-    if (url) {
-      const isTT=(p.videoUrl).includes('tiktok.com'), isYT=(p.videoUrl).includes('youtube.com')||(p.videoUrl).includes('youtu.be');
-      const net = isTT?`<div class="thumb-network">${TT_SVG}</div>`:isYT?`<div class="thumb-network">${YT_SVG}</div>`:'';
-      el.innerHTML=`<img src="${esc(url)}" alt="" loading="lazy"/><div class="thumb-play">${PLAY_SVG}</div>${net}`;
-    }
+    const isTT = p.videoUrl.includes('tiktok.com');
+    const isYT = p.videoUrl.includes('youtube.com') || p.videoUrl.includes('youtu.be');
+    const net = isTT ? `<div class="thumb-network">${TT_SVG}</div>`
+              : isYT ? `<div class="thumb-network">${YT_SVG}</div>` : '';
+    el.innerHTML = `<img src="${esc(url)}" alt="" loading="eager"/><div class="thumb-play">${PLAY_SVG}</div>${net}`;
   }
 }
 
@@ -1520,7 +1541,7 @@ window.openSharePost = async function(pid) {
     fetchThumb(p.videoUrl).then(url => {
       const el=$('share-thumb'); if(!el||!url) return;
       const net=isTT?`<div class="thumb-network">${TT_SVG}</div>`:isYT?`<div class="thumb-network">${YT_SVG}</div>`:'';
-      el.innerHTML=`<img src="${esc(url)}" alt="" loading="lazy"/><div class="thumb-play">${PLAY_SVG}</div>${net}`;
+      el.innerHTML=`<img src="${esc(url)}" alt="" loading="eager"/><div class="thumb-play">${PLAY_SVG}</div>${net}`;
     });
   }
 };
