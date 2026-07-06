@@ -76,16 +76,17 @@ input, textarea, select { -webkit-user-select: text; user-select: text; }
 
 /* Chaque page remplit #app sauf la topbar et bottom nav */
 .page {
-  display: none;
+  display: none !important;
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   background: var(--bg);
-  /* Padding bottom = hauteur de la bottom nav */
   padding-bottom: 72px;
 }
-.page.active { display: block; }
+.page.active { display: block !important; }
+#page-auth.active { display: flex !important; flex-direction: column; align-items: center; justify-content: center; }
+#page-pseudo.active { display: flex !important; flex-direction: column; align-items: center; justify-content: center; }
 
 /* ══════════════════════════════════════
    TOPBAR (fixe dans #app)
@@ -596,7 +597,7 @@ body.light .notif-item.unread { background: rgba(37,99,235,.04); }
   </div>
 
   <!-- AUTH -->
-  <div id="page-auth" class="page" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100%;padding:40px 24px;text-align:center;">
+  <div id="page-auth" class="page" style="min-height:100%;padding:40px 24px;text-align:center;">
     <img src="assets/logo.png" alt="Punchline" style="width:220px;height:auto;margin-bottom:12px;"/>
     <p style="font-size:15px;color:var(--ink2);margin-bottom:44px;font-family:'Space Grotesk',sans-serif;">Ton commentaire, ton art.</p>
     <div style="width:100%;max-width:320px;">
