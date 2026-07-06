@@ -101,6 +101,10 @@ input, textarea, select { -webkit-user-select: text; user-select: text; }
   min-height: 88px;
 }
 .topbar-logo { height: 72px; width: auto; display: block; }
+.topbar-logo-dark { display: block; }
+.topbar-logo-light { display: none; }
+body.light .topbar-logo-dark { display: none; }
+body.light .topbar-logo-light { display: block; }
 .story-scroll { display: flex; gap: 14px; overflow-x: auto; padding: 8px 16px 12px; scrollbar-width: none; }
 .story-scroll::-webkit-scrollbar { display: none; }
 .story-item { display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; flex-shrink: 0; }
@@ -593,7 +597,8 @@ body.light .notif-item.unread { background: rgba(37,99,235,.04); }
   <!-- TOPBAR -->
   <div id="topbar" style="display:none;position:relative;">
     <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);">
-      <img src="assets/logo.png" alt="Punchline" class="topbar-logo"/>
+      <img src="assets/logo.png" alt="Punchline" class="topbar-logo topbar-logo-dark"/>
+      <img src="assets/logo-light.png" alt="Punchline" class="topbar-logo topbar-logo-light"/>
     </div>
     <div style="width:36px;"></div>
     <div class="topbar-actions">
@@ -628,7 +633,8 @@ body.light .notif-item.unread { background: rgba(37,99,235,.04); }
 
   <!-- AUTH -->
   <div id="page-auth" class="page" style="min-height:100%;padding:40px 24px;text-align:center;">
-    <img src="assets/logo.png" alt="Punchline" style="width:220px;height:auto;margin-bottom:12px;"/>
+    <img src="assets/logo.png" alt="Punchline" class="topbar-logo-dark" style="width:220px;height:auto;margin-bottom:12px;"/>
+      <img src="assets/logo-light.png" alt="Punchline" class="topbar-logo-light" style="width:220px;height:auto;margin-bottom:12px;"/>
     <p style="font-size:15px;color:var(--ink2);margin-bottom:44px;font-family:'Space Grotesk',sans-serif;">Ton commentaire, ton art.</p>
     <div style="width:100%;max-width:320px;">
       <button onclick="doGoogleLogin()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:12px;padding:15px 20px;background:var(--yellow);color:#000;border:none;border-radius:10px;font-size:15px;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;transition:opacity .15s;">
@@ -682,8 +688,8 @@ body.light .notif-item.unread { background: rgba(37,99,235,.04); }
     <div class="section-label">Mes punchlines</div>
     <div class="posts-list" id="own-posts"></div>
     <div class="legal">
-      <strong>© 2026 Punchline App — Mis à jour juillet 2026</strong>
-      <p>Tous droits réservés. Le contenu et les fonctionnalités de cette application sont la propriété exclusive de Punchline App.<br/>Les commentaires publiés restent la propriété intellectuelle de leurs auteurs.</p>
+      <strong>© 2026 mypunchline app — Mis à jour juillet 2026</strong>
+      <p>Tous droits réservés. Le contenu et les fonctionnalités de cette application sont la propriété exclusive de mypunchline app.<br/>Les commentaires publiés restent la propriété intellectuelle de leurs auteurs.</p>
       <p style="margin-top:6px;"><a href="/privacy.html">Politique de confidentialité</a></p>
     </div>
   </div>
