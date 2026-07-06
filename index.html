@@ -1499,12 +1499,23 @@ window.openSharePost = async function(pid) {
   const isIG=(p.videoUrl||'').includes('instagram.com');
   const isTT=(p.videoUrl||'').includes('tiktok.com'), isYT=(p.videoUrl||'').includes('youtube.com')||(p.videoUrl||'').includes('youtu.be');
   let thumbHTML='';
+  // Préfetcher la miniature AVANT de construire le HTML pour éviter le flash
+  let prefetchedThumbUrl = null;
+  if (p.videoUrl && !isIG && (isTT || isYT)) {
+    prefetchedThumbUrl = await fetchThumb(p.videoUrl);
+  }
   if (p.videoUrl) {
     if (isIG) {
       thumbHTML=`<a href="${esc(p.videoUrl)}" target="_blank" rel="noopener" class="ig-badge"><div class="ig-badge-icon">${IG_SVG.replace('width="16"','width="20"').replace('height="16"','height="20"')}</div><div class="ig-badge-text"><strong>Voir sur Instagram</strong>${esc(host)}</div></a>`;
     } else {
       const net=isTT?`<div class="thumb-network">${TT_SVG}</div>`:isYT?`<div class="thumb-network">${YT_SVG}</div>`:'';
-      thumbHTML=`<a href="${esc(p.videoUrl)}" target="_blank" rel="noopener" style="display:block;text-decoration:none;"><div class="thumb-wrap" id="share-thumb">${net}</div></a>`;
+      if (prefetchedThumbUrl) {
+        // Miniature déjà disponible → l'afficher directement dans le HTML
+        thumbHTML=`<a href="${esc(p.videoUrl)}" target="_blank" rel="noopener" style="display:block;text-decoration:none;"><div class="thumb-wrap"><img src="${esc(prefetchedThumbUrl)}" alt="" loading="eager"/><div class="thumb-play">${PLAY_SVG}</div>${net}</div></a>`;
+      } else {
+        // Pas encore dispo → placeholder avec id pour hydratation après
+        thumbHTML=`<a href="${esc(p.videoUrl)}" target="_blank" rel="noopener" style="display:block;text-decoration:none;"><div class="thumb-wrap" id="share-thumb">${net}</div></a>`;
+      }
     }
   }
   // Catégorie la plus sélectionnée (surbrillance)
@@ -1532,17 +1543,18 @@ window.openSharePost = async function(pid) {
     <button class="btn btn-ghost btn-sm" onclick="openPubProfile('${p.uid}')">Voir le profil</button>
   </div>`;
   // Bind events
-  $('s-like').onclick = () => toggleLike(pid, p.uid, $('s-like'));
   c.querySelectorAll('[data-scat]').forEach(btn => {
     btn.onclick = async () => { await voteCat(btn.dataset.spid, btn.dataset.scat, btn.dataset.sowner); openSharePost(pid); };
   });
-  // Thumb
-  if (p.videoUrl && !isIG) {
-    fetchThumb(p.videoUrl).then(url => {
-      const el=$('share-thumb'); if(!el||!url) return;
-      const net=isTT?`<div class="thumb-network">${TT_SVG}</div>`:isYT?`<div class="thumb-network">${YT_SVG}</div>`:'';
-      el.innerHTML=`<img src="${esc(url)}" alt="" loading="eager"/><div class="thumb-play">${PLAY_SVG}</div>${net}`;
-    });
+  // Si la miniature n'était pas encore en cache au moment du rendu, on l'affiche maintenant
+  if (p.videoUrl && !isIG && !prefetchedThumbUrl) {
+    const thumbUrl = await fetchThumb(p.videoUrl);
+    const el = $('share-thumb');
+    if (el && thumbUrl) {
+      const net = isTT ? `<div class="thumb-network">${TT_SVG}</div>`
+                : isYT ? `<div class="thumb-network">${YT_SVG}</div>` : '';
+      el.innerHTML = `<img src="${esc(thumbUrl)}" alt="" loading="eager"/><div class="thumb-play">${PLAY_SVG}</div>${net}`;
+    }
   }
 };
 window.navToPost = window.openSharePost;
