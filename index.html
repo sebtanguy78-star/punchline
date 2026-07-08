@@ -108,8 +108,17 @@ body.light .topbar-logo-light { display: block; }
 .story-scroll { display: flex; gap: 14px; overflow-x: auto; padding: 8px 16px 12px; scrollbar-width: none; }
 .story-scroll::-webkit-scrollbar { display: none; }
 .story-item { display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; flex-shrink: 0; }
-.story-ring { width: 70px; height: 70px; border-radius: 50%; padding: 2.5px; background: linear-gradient(135deg, var(--yellow), #ff9500); }
+.story-ring { width: 70px; height: 70px; border-radius: 50%; padding: 2.5px; background: var(--border); }
+.story-ring.has-new { background: linear-gradient(135deg, var(--yellow), #ff9500); }
 .story-ring.is-me { background: linear-gradient(135deg, var(--smart), var(--love)); }
+.story-seen { background: var(--border) !important; }
+.story-item-wrap { position: relative; }
+.story-new-dot {
+  position: absolute; bottom: 22px; right: 0;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: #25D366; border: 2px solid var(--bg);
+  z-index: 2;
+}
 .story-avatar { width: 65px; height: 65px; border-radius: 50%; background: var(--card2); border: 2.5px solid var(--bg); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 20px; color: var(--ink); overflow: hidden; font-family: 'Space Grotesk', sans-serif; }
 .story-name { font-size: 11px; font-weight: 600; color: var(--ink2); max-width: 70px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cat-tabs { display: flex; gap: 8px; padding: 4px 16px 12px; overflow-x: auto; scrollbar-width: none; }
@@ -1663,12 +1672,21 @@ async function loadHome() {
       else
       uc.innerHTML=users.slice(0,10).map((u,i)=>{
         const isMe=CU&&u.id===CU.uid;
-        return `<div class="story-item" onclick="openPubProfile('${u.id}')">
-          <div class="story-ring${isMe?' is-me':''}">
-            <div class="story-avatar">${avatarHTML(u)}</div>
+        // Nouveau post = lastPostAt plus récent que la dernière visite du profil
+        let hasNew = false;
+        try {
+          const seen = JSON.parse(localStorage.getItem('pl_seen')||'{}');
+          hasNew = u.lastPostAt && u.lastPostAt > (seen[u.id]||0);
+        } catch{}
+        return `<div class="story-item-wrap">
+          <div class="story-item" onclick="markSeen('${u.id}'); openPubProfile('${u.id}')">
+            <div class="story-ring${isMe?' is-me':''}${hasNew?' has-new':''}">
+              <div class="story-avatar">${avatarHTML(u)}</div>
+            </div>
+            ${hasNew ? '<div class="story-new-dot"></div>' : ''}
+            <div class="story-name">${esc(u.name||'?')}</div>
+            <div class="story-score">${u.score||0}pts</div>
           </div>
-          <div class="story-name">${esc(u.name||'?')}</div>
-          <div class="story-score">${u.score||0}pts</div>
         </div>`;
       }).join('');
     } catch{}
