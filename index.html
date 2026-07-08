@@ -890,7 +890,7 @@ import {
 /* ── CONFIG FIREBASE ── */
 const FB = initializeApp({
   apiKey: "AIzaSyCIvSbaAUJ7l4Fi598lrZFj3sDswZUWA30",
-  authDomain: "punchline-ea3fc.firebaseapp.com",
+  authDomain: "mypunchlineproject01.netlify.app",
   projectId: "punchline-ea3fc",
   storageBucket: "punchline-ea3fc.firebasestorage.app",
   messagingSenderId: "322585576001",
@@ -1049,8 +1049,13 @@ try { if (localStorage.getItem('pl_theme')==='light') applyTheme(true); } catch{
 window.doGoogleLogin = async function() {
   $('auth-error').style.display='none';
   try {
-    // signInWithPopup fonctionne dans Capacitor avec authDomain correct
-    await signInWithPopup(auth, GP);
+    if (isNative) {
+      // Android WebView : signInWithRedirect avec authDomain Netlify
+      await signInWithRedirect(auth, GP);
+    } else {
+      // Web : popup standard
+      await signInWithPopup(auth, GP);
+    }
   } catch(e) {
     if (e.code !== 'auth/popup-closed-by-user' && e.message !== 'User canceled.') {
       $('auth-error').textContent = 'Erreur : ' + e.message;
@@ -1058,6 +1063,18 @@ window.doGoogleLogin = async function() {
     }
   }
 };
+
+// Gérer le retour du redirect Google sur Android
+if (isNative) {
+  getRedirectResult(auth).then(result => {
+    // Si connecté via redirect, onAuthStateChanged prend le relais automatiquement
+    if (result?.user) console.log('Redirect login OK:', result.user.email);
+  }).catch(e => {
+    if (e.code && e.code !== 'auth/no-current-user' && e.code !== 'auth/null-user') {
+      console.error('Redirect error:', e.code, e.message);
+    }
+  });
+}
 
 window.doLogout = async function() {
   await signOut(auth);
