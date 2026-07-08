@@ -923,6 +923,15 @@ const FB = initializeApp({
 const auth = getAuth(FB);
 const db   = getFirestore(FB);
 const isNative = !!(window.Capacitor?.isNativePlatform?.());
+// Masquer le bouton Google sur Android natif
+if (isNative) {
+  document.addEventListener('DOMContentLoaded', () => {
+    const googleBtn = document.getElementById('auth-google-btn');
+    const separator = googleBtn?.previousElementSibling;
+    if (googleBtn) googleBtn.style.display = 'none';
+    if (separator) separator.style.display = 'none';
+  });
+}
 
 /* ── CONSTANTES ── */
 const CATS = {
@@ -1143,12 +1152,12 @@ window.doGoogleLogin = async function() {
   errEl.style.display = 'none';
   btn.disabled = true; btn.style.opacity = '0.6';
   try {
-    if (isNative && window.Capacitor?.Plugins?.FirebaseAuthentication) {
-      // Android natif via plugin Capacitor
-      const { FirebaseAuthentication } = window.Capacitor.Plugins;
-      const result = await FirebaseAuthentication.signInWithGoogle();
-      const credential = GoogleAuthProvider.credential(result.credential?.idToken);
-      await signInWithCredential(auth, credential);
+    if (isNative) {
+      // Google Sign-In non disponible sur Android — utiliser email/password
+      errEl.textContent = 'Utilise email/mot de passe sur Android. Google disponible sur le web.';
+      errEl.style.display = 'block';
+      btn.disabled = false; btn.style.opacity = '1';
+      return;
     } else {
       // Web : popup standard
       const { signInWithPopup } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js');
@@ -1967,8 +1976,12 @@ function renderNotifs(el, notifs, um={}) {
 
 /* ── RÉGLAGES ── */
 window.openSettings = function() {
-  $('toggle-theme').checked=document.body.classList.contains('light');
-  $('toggle-photo').checked=!!(CUD?.showPhoto);
+  $('toggle-theme').checked = document.body.classList.contains('light');
+  $('toggle-photo').checked = !!(CUD?.showPhoto);
+  // Afficher le toggle photo uniquement si connecté via Google
+  const isGoogleUser = CU?.providerData?.some(p => p.providerId === 'google.com');
+  const photoRow = document.getElementById('photo-toggle-row');
+  if (photoRow) photoRow.style.display = isGoogleUser ? 'flex' : 'none';
   $('settings-modal').classList.add('open');
 };
 window.closeSettings = function() { $('settings-modal').classList.remove('open'); };
