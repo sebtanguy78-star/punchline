@@ -878,8 +878,8 @@ body.light .notif-item.unread { background: rgba(37,99,235,.04); }
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import {
-  getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect,
-  getRedirectResult, signOut, onAuthStateChanged
+  getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+  sendPasswordResetEmail, signOut, onAuthStateChanged
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 import {
   getFirestore, doc, setDoc, getDoc, getDocs, addDoc, deleteDoc, updateDoc,
@@ -898,14 +898,7 @@ const FB = initializeApp({
 });
 const auth = getAuth(FB);
 const db   = getFirestore(FB);
-const GP   = new GoogleAuthProvider();
 const isNative = !!(window.Capacitor?.isNativePlatform?.());
-
-// Sur Android Capacitor, configurer l'auth pour accepter les popups
-if (isNative) {
-  // Forcer l'utilisation du domaine Firebase pour l'auth
-  auth.config = auth.config || {};
-}
 
 /* ── CONSTANTES ── */
 const CATS = {
@@ -1046,25 +1039,72 @@ window.toggleTheme = light => applyTheme(light);
 try { if (localStorage.getItem('pl_theme')==='light') applyTheme(true); } catch{}
 
 /* ── AUTH ── */
-window.doGoogleLogin = async function() {
-  $('auth-error').style.display='none';
+// ── EMAIL + MOT DE PASSE AUTH ──
+let authMode = 'login'; // 'login' ou 'register'
+
+window.switchAuthTab = function(mode) {
+  authMode = mode;
+  const isLogin = mode === 'login';
+  $('tab-login').style.background = isLogin ? 'var(--yellow)' : 'none';
+  $('tab-login').style.color = isLogin ? '#000' : 'var(--ink2)';
+  $('tab-register').style.background = isLogin ? 'none' : 'var(--yellow)';
+  $('tab-register').style.color = isLogin ? 'var(--ink2)' : '#000';
+  $('auth-submit-btn').textContent = isLogin ? 'Se connecter' : "S'inscrire";
+  $('btn-forgot').style.display = isLogin ? 'block' : 'none';
+  $('auth-error').style.display = 'none';
+};
+
+window.doEmailAuth = async function() {
+  const email = $('auth-email').value.trim();
+  const password = $('auth-password').value;
+  const btn = $('auth-submit-btn');
+  const errEl = $('auth-error');
+  errEl.style.display = 'none';
+  if (!email || !email.includes('@')) { errEl.textContent = 'Entre une adresse email valide.'; errEl.style.display = 'block'; return; }
+  if (!password || password.length < 6) { errEl.textContent = 'Le mot de passe doit faire au moins 6 caractères.'; errEl.style.display = 'block'; return; }
+  btn.disabled = true;
+  btn.textContent = authMode === 'login' ? 'Connexion…' : 'Inscription…';
   try {
-    if (isNative) {
-      // Plugin natif Capacitor Firebase Authentication
-      const { FirebaseAuthentication } = window.Capacitor.Plugins;
-      const result = await FirebaseAuthentication.signInWithGoogle();
-      const { GoogleAuthProvider, signInWithCredential } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js');
-      const credential = GoogleAuthProvider.credential(result.credential?.idToken);
-      await signInWithCredential(auth, credential);
+    if (authMode === 'login') {
+      await signInWithEmailAndPassword(auth, email, password);
     } else {
-      // Web : popup standard
-      await signInWithPopup(auth, GP);
+      await createUserWithEmailAndPassword(auth, email, password);
     }
+    // onAuthStateChanged prend le relais
   } catch(e) {
-    if (e.code !== 'auth/popup-closed-by-user' && e.message !== 'User canceled.') {
-      $('auth-error').textContent = 'Erreur : ' + e.message;
-      $('auth-error').style.display = 'block';
-    }
+    const msgs = {
+      'auth/user-not-found': 'Aucun compte avec cet email. Inscris-toi !',
+      'auth/wrong-password': 'Mot de passe incorrect.',
+      'auth/email-already-in-use': 'Cet email est déjà utilisé. Connecte-toi.',
+      'auth/invalid-email': 'Adresse email invalide.',
+      'auth/weak-password': 'Mot de passe trop faible (6 caractères min).',
+      'auth/invalid-credential': 'Email ou mot de passe incorrect.',
+      'auth/too-many-requests': 'Trop de tentatives. Réessaie plus tard.',
+    };
+    errEl.textContent = msgs[e.code] || ('Erreur : ' + e.message);
+    errEl.style.display = 'block';
+  }
+  btn.disabled = false;
+  btn.textContent = authMode === 'login' ? 'Se connecter' : "S'inscrire";
+};
+
+window.forgotPassword = async function() {
+  const email = $('auth-email').value.trim();
+  const errEl = $('auth-error');
+  if (!email || !email.includes('@')) {
+    errEl.textContent = 'Entre ton email d'abord.';
+    errEl.style.display = 'block';
+    return;
+  }
+  try {
+    await sendPasswordResetEmail(auth, email);
+    errEl.style.color = 'var(--biz)';
+    errEl.textContent = 'Email de réinitialisation envoyé !';
+    errEl.style.display = 'block';
+    setTimeout(() => { errEl.style.color = 'var(--danger)'; errEl.style.display = 'none'; }, 4000);
+  } catch(e) {
+    errEl.textContent = 'Erreur : ' + e.message;
+    errEl.style.display = 'block';
   }
 };
 
@@ -1131,7 +1171,7 @@ window.submitPseudo = async function() {
   try {
     await setDoc(doc(db,'users',CU.uid), {
       name, nameLower: name.toLowerCase(),
-      email: CU.email, photoURL: CU.photoURL||null, showPhoto: false,
+      email: CU.email||'', photoURL: null, showPhoto: false,
       score: 0, totalLikes: 0, postCount: 0, bio: '',
       followers:[], following:[], cats:{funny:0,smart:0,love:0,biz:0},
       createdAt: serverTimestamp()
