@@ -1092,7 +1092,7 @@ window.forgotPassword = async function() {
   const email = $('auth-email').value.trim();
   const errEl = $('auth-error');
   if (!email || !email.includes('@')) {
-    errEl.textContent = 'Entre ton email d'abord.';
+    errEl.textContent = "Entre ton email d'abord.";
     errEl.style.display = 'block';
     return;
   }
@@ -1656,21 +1656,24 @@ async function loadCatPosts(cat) {
   if (!pc) return;
   pc.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
   try {
-    // Charger tous les posts triés par score (1 seule requête, pas d'index composite)
-    const snap = await getDocs(query(collection(db,'posts'), orderBy('score','desc')));
+    // Sans orderBy — pas besoin d'index, tri côté client
+    const snap = await getDocs(collection(db,'posts'));
     let posts = [];
     snap.forEach(d => posts.push({id:d.id,...d.data()}));
-    // Filtrer côté client par catégorie si besoin
-    if (cat !== 'all') {
+    // Trier par score côté client
+    if (cat === 'all') {
+      posts.sort((a,b) => (b.score||0) - (a.score||0));
+    } else {
       posts = posts
         .filter(p => (p.cats?.[cat]||0) > 0)
         .sort((a,b) => (b.cats?.[cat]||0) - (a.cats?.[cat]||0));
     }
     catCache[cat] = posts;
-    renderHomePosts(posts);
+    await renderHomePosts(posts);
   } catch(e) {
     console.error('loadCatPosts error:', e);
-    if (pc) pc.innerHTML = '<div class="empty"><p>Erreur de chargement.</p></div>';
+    const pc2 = $('home-top-posts');
+    if (pc2) pc2.innerHTML = `<div class="empty"><p>Erreur : ${e.message}</p></div>`;
   }
 }
 
