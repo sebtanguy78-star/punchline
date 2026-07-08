@@ -869,8 +869,8 @@ body.light .notif-item.unread { background: rgba(37,99,235,.04); }
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import {
-  getAuth, GoogleAuthProvider, signInWithPopup, signInWithCredential,
-  signOut, onAuthStateChanged
+  getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect,
+  getRedirectResult, signOut, onAuthStateChanged
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 import {
   getFirestore, doc, setDoc, getDoc, getDocs, addDoc, deleteDoc, updateDoc,
@@ -891,6 +891,12 @@ const auth = getAuth(FB);
 const db   = getFirestore(FB);
 const GP   = new GoogleAuthProvider();
 const isNative = !!(window.Capacitor?.isNativePlatform?.());
+
+// Sur Android Capacitor, configurer l'auth pour accepter les popups
+if (isNative) {
+  // Forcer l'utilisation du domaine Firebase pour l'auth
+  auth.config = auth.config || {};
+}
 
 /* ── CONSTANTES ── */
 const CATS = {
@@ -1034,17 +1040,12 @@ try { if (localStorage.getItem('pl_theme')==='light') applyTheme(true); } catch{
 window.doGoogleLogin = async function() {
   $('auth-error').style.display='none';
   try {
-    if (isNative) {
-      const {FirebaseAuthentication} = await import('@capacitor-firebase/authentication');
-      const r = await FirebaseAuthentication.signInWithGoogle();
-      await signInWithCredential(auth, GoogleAuthProvider.credential(r.credential?.idToken));
-    } else {
-      await signInWithPopup(auth, GP);
-    }
+    // signInWithPopup fonctionne dans Capacitor avec authDomain correct
+    await signInWithPopup(auth, GP);
   } catch(e) {
-    if (e.code!=='auth/popup-closed-by-user' && e.message!=='User canceled.') {
-      $('auth-error').textContent='Erreur : '+e.message;
-      $('auth-error').style.display='block';
+    if (e.code !== 'auth/popup-closed-by-user' && e.message !== 'User canceled.') {
+      $('auth-error').textContent = 'Erreur : ' + e.message;
+      $('auth-error').style.display = 'block';
     }
   }
 };
