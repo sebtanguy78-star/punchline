@@ -1978,8 +1978,8 @@ function renderNotifs(el, notifs, um={}) {
 window.openSettings = function() {
   $('toggle-theme').checked = document.body.classList.contains('light');
   $('toggle-photo').checked = !!(CUD?.showPhoto);
-  // Afficher le toggle photo uniquement si connecté via Google
-  const isGoogleUser = CU?.providerData?.some(p => p.providerId === 'google.com');
+  // Vérifier si connecté via Google en lisant directement auth.currentUser
+  const isGoogleUser = auth.currentUser?.providerData?.some(p => p.providerId === 'google.com') || false;
   const photoRow = document.getElementById('photo-toggle-row');
   if (photoRow) photoRow.style.display = isGoogleUser ? 'flex' : 'none';
   $('settings-modal').classList.add('open');
