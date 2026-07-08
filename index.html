@@ -890,7 +890,7 @@ import {
 /* ── CONFIG FIREBASE ── */
 const FB = initializeApp({
   apiKey: "AIzaSyCIvSbaAUJ7l4Fi598lrZFj3sDswZUWA30",
-  authDomain: "mypunchlineproject01.netlify.app",
+  authDomain: "punchline-ea3fc.firebaseapp.com",
   projectId: "punchline-ea3fc",
   storageBucket: "punchline-ea3fc.firebasestorage.app",
   messagingSenderId: "322585576001",
@@ -1050,8 +1050,12 @@ window.doGoogleLogin = async function() {
   $('auth-error').style.display='none';
   try {
     if (isNative) {
-      // Android WebView : signInWithRedirect avec authDomain Netlify
-      await signInWithRedirect(auth, GP);
+      // Plugin natif Capacitor Firebase Authentication
+      const { FirebaseAuthentication } = window.Capacitor.Plugins;
+      const result = await FirebaseAuthentication.signInWithGoogle();
+      const { GoogleAuthProvider, signInWithCredential } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js');
+      const credential = GoogleAuthProvider.credential(result.credential?.idToken);
+      await signInWithCredential(auth, credential);
     } else {
       // Web : popup standard
       await signInWithPopup(auth, GP);
@@ -1063,18 +1067,6 @@ window.doGoogleLogin = async function() {
     }
   }
 };
-
-// Gérer le retour du redirect Google sur Android
-if (isNative) {
-  getRedirectResult(auth).then(result => {
-    // Si connecté via redirect, onAuthStateChanged prend le relais automatiquement
-    if (result?.user) console.log('Redirect login OK:', result.user.email);
-  }).catch(e => {
-    if (e.code && e.code !== 'auth/no-current-user' && e.code !== 'auth/null-user') {
-      console.error('Redirect error:', e.code, e.message);
-    }
-  });
-}
 
 window.doLogout = async function() {
   await signOut(auth);
