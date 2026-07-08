@@ -1413,6 +1413,20 @@ window.submitPost = async function() {
   if (!url) return toast('Ajoute le lien de la vidéo.');
   const btn=$('post-submit-btn'); btn.disabled=true; btn.textContent='Publication…';
   try {
+    // Vérifier la limite de 2 posts par jour
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const todayTs = today.getTime();
+    const todaySnap = await getDocs(query(
+      collection(db,'posts'),
+      where('uid','==',CU.uid),
+      where('createdAt','>=', new Date(todayTs))
+    ));
+    if (todaySnap.size >= 2) {
+      toast('Limite atteinte : 2 punchlines max par jour. 🕐');
+      btn.disabled=false; btn.textContent='Publier';
+      return;
+    }
     await addDoc(collection(db,'posts'), {
       uid:CU.uid, videoUrl:url, comment:txt,
       score:0, likes:0, cats:{funny:0,smart:0,love:0,biz:0},
