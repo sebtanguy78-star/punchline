@@ -1653,21 +1653,24 @@ window.filterCat = function(cat) {
 
 async function loadCatPosts(cat) {
   const pc = $('home-top-posts');
+  if (!pc) return;
   pc.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
   try {
+    // Charger tous les posts triés par score (1 seule requête, pas d'index composite)
+    const snap = await getDocs(query(collection(db,'posts'), orderBy('score','desc')));
     let posts = [];
-    if (cat === 'all') {
-      const snap = await getDocs(query(collection(db,'posts'), orderBy('score','desc')));
-      snap.forEach(d => posts.push({id:d.id,...d.data()}));
-    } else {
-      // Trier par le score de la catégorie spécifique
-      const snap = await getDocs(query(collection(db,'posts'), orderBy(`cats.${cat}`,'desc')));
-      snap.forEach(d => { if ((d.data().cats?.[cat]||0)>0) posts.push({id:d.id,...d.data()}); });
+    snap.forEach(d => posts.push({id:d.id,...d.data()}));
+    // Filtrer côté client par catégorie si besoin
+    if (cat !== 'all') {
+      posts = posts
+        .filter(p => (p.cats?.[cat]||0) > 0)
+        .sort((a,b) => (b.cats?.[cat]||0) - (a.cats?.[cat]||0));
     }
     catCache[cat] = posts;
     renderHomePosts(posts);
   } catch(e) {
-    pc.innerHTML = '<div class="empty"><p>Erreur de chargement.</p></div>';
+    console.error('loadCatPosts error:', e);
+    if (pc) pc.innerHTML = '<div class="empty"><p>Erreur de chargement.</p></div>';
   }
 }
 
@@ -1765,62 +1768,6 @@ async function loadHome() {
   await loadCatPosts('all');
 }
 
-async function _unused_old_loadhome() { // ancienne version remplacée
-  const pc=$('home-top-posts');
-  if (!pc) return;
-  pc.innerHTML='<div class="loading"><div class="spinner"></div></div>';
-  try {
-    const snap=await getDocs(query(collection(db,'posts'),orderBy('score','desc')));
-    const posts=[]; snap.forEach(d=>posts.push({id:d.id,...d.data()}));
-    if (!posts.length) { pc.innerHTML='<div class="empty"><p>Aucun post encore. Sois le premier !</p></div>'; return; }
-    const uids=[...new Set(posts.map(p=>p.uid))];
-    const usnaps=await Promise.all(uids.map(id=>getDoc(doc(db,'users',id))));
-    const um={}; usnaps.forEach(s=>{if(s.exists())um[s.id]=s.data();});
-    pc.innerHTML=posts.map(p=>{
-      const u=um[p.uid]||{name:'?'};
-      const dom=domCat(p.cats);
-      const liked=CU&&(p.likedBy||[]).includes(CU.uid);
-      const isOwn=CU&&p.uid===CU.uid;
-      const myVote=CU&&(p.catVotes||{})[CU.uid];
-      const host=(() => { try { return new URL(p.videoUrl||'').hostname.replace('www.',''); } catch{ return ''; } })();
-      const isIG=(p.videoUrl||'').includes('instagram.com');
-      const isTT=(p.videoUrl||'').includes('tiktok.com'), isYT=(p.videoUrl||'').includes('youtube.com')||(p.videoUrl||'').includes('youtu.be');
-      let thumbHTML='';
-      if (p.videoUrl) {
-        if (isIG) {
-          thumbHTML=`<a href="${esc(p.videoUrl)}" target="_blank" rel="noopener" class="ig-badge"><div class="ig-badge-icon">${IG_SVG.replace('width="16"','width="20"').replace('height="16"','height="20"')}</div><div class="ig-badge-text"><strong>Voir sur Instagram</strong>${esc(host)}</div></a>`;
-        } else {
-          const net=isTT?`<div class="thumb-network">${TT_SVG}</div>`:isYT?`<div class="thumb-network">${YT_SVG}</div>`:'';
-          thumbHTML=`<a href="${esc(p.videoUrl)}" target="_blank" rel="noopener" style="display:block;text-decoration:none;"><div class="thumb-wrap" data-thumb="${esc(p.id)}">${net}</div></a>`;
-        }
-      }
-      const catBtns=Object.entries(CATS).map(([k,c])=>`<button class="cat-vote-btn ${k}${myVote===k?' active':''}" data-cat="${k}" data-pid="${p.id}" data-owner="${p.uid}" ${isOwn?'disabled':''}>${c.label}</button>`).join('');
-      const hdate = fmtDate(p.createdAt);
-      return `<div class="card post-card" id="hpc-${p.id}" style="position:relative;">
-        ${hdate ? `<div class="post-date">${hdate}</div>` : ''}
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;cursor:pointer;" onclick="openPubProfile('${p.uid}')">
-          <div class="avatar avatar-sm">${avatarHTML(u)}</div>
-          <div><span style="font-weight:700;font-size:13px">${esc(u.name||'?')}</span> ${(u.score||0)>0 ? catPill(dom) : ''}</div>
-        </div>
-        <div class="post-score-wrap"><div class="post-score-num" id="hsc-${p.id}">${p.score||0}</div><div class="post-score-label">points</div></div>
-        <div class="post-comment">"${esc(p.comment||'')}"</div>
-        ${thumbHTML}
-        <div class="cat-vote-row">${catBtns}</div>
-        <div class="post-actions">
-          <button class="like-btn${liked?' liked':''}" data-like="${p.id}" data-owner="${p.uid}" ${isOwn?'disabled':''}>
-            <svg viewBox="0 0 14 14" fill="${liked?'currentColor':'none'}" stroke="currentColor" stroke-width="1.5"><path d="M7 12S1.5 8.3 1.5 4.7a3 3 0 0 1 5.5-1.6 3 3 0 0 1 5.5 1.6C12.5 8.3 7 12 7 12z"/></svg>
-            <span id="hlk-${p.id}">${p.likes||0}</span>
-          </button>
-          <button class="btn btn-ghost btn-sm" onclick="openSharePost('${p.id}')">Voir</button>
-        </div>
-      </div>`;
-    }).join('');
-    // Bind events sur home
-    pc.querySelectorAll('[data-like]').forEach(btn=>btn.addEventListener('click',()=>toggleLike(btn.dataset.like,btn.dataset.owner,btn)));
-    pc.querySelectorAll('[data-cat]').forEach(btn=>btn.addEventListener('click',()=>voteCat(btn.dataset.pid,btn.dataset.cat,btn.dataset.owner)));
-    hydrateThumb(pc, posts);
-  } catch(e) { pc.innerHTML=`<div class="empty"><p>Erreur de chargement.</p></div>`; }
-}
 
 window.switchTab = function(tab) {
   rankingTab=tab;
