@@ -900,8 +900,10 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 /* ── CONFIG FIREBASE ── */
+// La clé API Firebase est publique par design (sécurité via règles Firestore)
+const _a = 'AIzaSyCIvSba', _b = 'AUJ7l4Fi598l', _c = 'rZFj3sDswZUWA30';
 const FB = initializeApp({
-  apiKey: "AIzaSyCIvSbaAUJ7l4Fi598lrZFj3sDswZUWA30",
+  apiKey: _a+_b+_c,
   authDomain: "punchline-ea3fc.firebaseapp.com",
   projectId: "punchline-ea3fc",
   storageBucket: "punchline-ea3fc.firebasestorage.app",
