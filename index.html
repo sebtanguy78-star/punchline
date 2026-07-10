@@ -591,6 +591,186 @@ body.light .notif-item.unread { background: rgba(37,99,235,.04); }
 .legal p { font-size: 11px; color: var(--ink3); line-height: 1.9; }
 .legal strong { display: block; font-size: 12px; color: var(--ink3); margin-bottom: 6px; }
 .legal a { color: var(--ink2); text-decoration: underline; }
+
+/* ══════════════════════════════════════
+   LAYOUT DESKTOP (>= 1024px)
+══════════════════════════════════════ */
+@media (min-width: 1024px) {
+  html, body { height: 100%; overflow: hidden; cursor: default; }
+
+  /* Fond desktop avec dégradé subtil */
+  body { background: var(--bg); }
+
+  /* Reset layout mobile */
+  #app {
+    position: static !important;
+    max-width: none !important;
+    margin: 0 !important;
+    display: grid !important;
+    grid-template-columns: 260px 1fr 320px !important;
+    grid-template-rows: 100vh !important;
+    grid-template-areas: "sidebar main aside" !important;
+    height: 100vh;
+    overflow: hidden;
+    background: var(--bg);
+  }
+
+  /* ── SIDEBAR GAUCHE ── */
+  #topbar {
+    grid-area: sidebar !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    justify-content: flex-start !important;
+    border-bottom: none !important;
+    border-right: 1px solid var(--border) !important;
+    padding: 28px 20px !important;
+    position: static !important;
+    height: 100vh;
+    overflow-y: auto;
+    min-height: unset !important;
+  }
+  .topbar-logo { height: 40px !important; margin-bottom: 32px; }
+  .topbar-logo-dark, .topbar-logo-light { height: 40px !important; }
+  .topbar-actions {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 4px !important;
+    width: 100%;
+    margin-top: 0 !important;
+  }
+  /* Cacher cloche et avatar de la topbar sur desktop */
+  #notif-badge-wrap, .avatar-btn { display: none !important; }
+
+  /* ── BOTTOM NAV → SIDEBAR NAV ── */
+  #bottom-nav {
+    grid-area: sidebar !important;
+    position: static !important;
+    transform: none !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+    align-items: flex-start !important;
+    border-top: none !important;
+    border-right: none !important;
+    background: transparent !important;
+    padding: 8px 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin-top: auto !important;
+    display: flex !important;
+  }
+  /* On réintègre la nav dans la sidebar */
+  #topbar { flex-direction: column; align-items: flex-start; }
+
+  .nav-btn {
+    flex-direction: row !important;
+    justify-content: flex-start !important;
+    gap: 14px !important;
+    padding: 12px 16px !important;
+    font-size: 15px !important;
+    text-transform: none !important;
+    letter-spacing: 0 !important;
+    border-radius: 12px !important;
+    width: 100% !important;
+    transition: background .15s !important;
+  }
+  .nav-btn:hover { background: var(--card2) !important; }
+  .nav-btn.active { background: var(--card2) !important; color: var(--yellow) !important; }
+  .nav-btn svg { width: 22px !important; height: 22px !important; }
+
+  /* Bouton poster en sidebar */
+  #desktop-post-btn {
+    display: flex !important;
+    align-items: center; justify-content: center;
+    gap: 8px; width: 100%;
+    padding: 14px; margin-top: 16px;
+    background: var(--yellow); color: #000;
+    border: none; border-radius: 12px;
+    font-size: 15px; font-weight: 700;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer; transition: opacity .15s;
+  }
+  #desktop-post-btn:hover { opacity: .85; }
+  body.light #desktop-post-btn { color: #fff; }
+
+  /* ── COLONNE CENTRALE (feed) ── */
+  #desktop-main {
+    grid-area: main !important;
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100vh;
+    overflow: hidden;
+    border-right: 1px solid var(--border);
+  }
+
+  /* Les pages vont dans #desktop-main */
+  .page {
+    padding-bottom: 0 !important;
+  }
+
+  /* ── COLONNE DROITE ── */
+  #desktop-aside {
+    grid-area: aside !important;
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 28px 20px;
+    height: 100vh;
+    overflow-y: auto;
+    gap: 20px;
+  }
+  #desktop-aside .aside-section {
+    background: var(--card2);
+    border-radius: 16px;
+    padding: 18px;
+  }
+  #desktop-aside .aside-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700; font-size: 16px;
+    margin-bottom: 14px; color: var(--ink);
+  }
+  /* Miniature top punchlineurs dans la sidebar droite */
+  .desktop-top-user {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 0; cursor: pointer;
+    border-bottom: 1px solid var(--border);
+  }
+  .desktop-top-user:last-child { border-bottom: none; }
+  .desktop-top-user-name { font-weight: 600; font-size: 14px; color: var(--ink); }
+  .desktop-top-user-score { font-size: 12px; color: var(--ink3); margin-top: 1px; }
+  .desktop-top-user-pts { font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 16px; color: var(--yellow); margin-left: auto; }
+
+  /* Cacher la bottom nav mobile */
+  #bottom-nav { display: none !important; }
+
+  /* Header desktop dans colonne centrale */
+  #desktop-topbar-center {
+    display: flex !important;
+    align-items: center; justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    background: var(--bg);
+    position: sticky; top: 0; z-index: 10;
+  }
+  #desktop-topbar-center h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700; font-size: 20px; color: var(--ink);
+  }
+
+  /* Ajuster le padding des pages */
+  .posts-list { padding: 12px 20px !important; }
+  .ranking-list { padding: 12px 20px !important; }
+
+  /* Card hover sur desktop */
+  .card:hover { border-color: var(--ink3); transition: border-color .15s; }
+  .r-card:hover { border-color: var(--yellow) !important; cursor: pointer; transition: border-color .15s; }
+}
+
+@media (min-width: 1024px) {
+  /* Wrapper desktop visible uniquement sur grand écran */
+  #desktop-post-btn { display: none; }
+}
+
 </style>
 </head>
 <body>
@@ -623,6 +803,10 @@ body.light .notif-item.unread { background: rgba(37,99,235,.04); }
       </div>
       <button class="avatar-btn" id="topbar-avatar" onclick="openSettings()" style="display:none">?</button>
     </div>
+    <button id="desktop-post-btn" onclick="openSheet()" style="display:none;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+      Nouvelle Punchline
+    </button>
   </div>
 
   <!-- PAGES -->
@@ -802,13 +986,25 @@ body.light .notif-item.unread { background: rgba(37,99,235,.04); }
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
       Alertes
     </button>
-    <button class="nav-btn" id="nav-profile" onclick="navTo('profile')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-      Profil
-    </button>
   </div>
 
-</div><!-- /#app -->
+</div><!-- /#desktop-main -->
+
+  <!-- COLONNE DROITE DESKTOP -->
+  <div id="desktop-aside">
+    <div class="aside-section">
+      <div class="aside-title">🔥 Top Punchlineurs</div>
+      <div id="desktop-top-users"><div style="color:var(--ink3);font-size:13px;">Chargement…</div></div>
+    </div>
+    <div class="aside-section">
+      <div class="aside-title">À propos</div>
+      <p style="font-size:13px;color:var(--ink2);line-height:1.7;">myPunchline — Le réseau social du commentaire créatif.<br/>Poste tes meilleures punchlines sur TikTok et Instagram.</p>
+      <p style="font-size:12px;color:var(--ink3);margin-top:10px;">© 2026 mypunchline app</p>
+      <a href="/privacy.html" style="font-size:12px;color:var(--ink3);display:block;margin-top:4px;">Politique de confidentialité</a>
+    </div>
+  </div>
+
+<!-- /#app -->
 
 <!-- BOTTOM SHEET : NOUVEAU POST -->
 <div class="sheet-overlay" id="sheet-overlay" onclick="closeSheet()"></div>
@@ -2019,6 +2215,61 @@ window.addEventListener('hashchange',()=>{
 
 /* ── SERVICE WORKER ── */
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{});
+
+/* ── DESKTOP LAYOUT ── */
+const isDesktop = () => window.innerWidth >= 1024;
+
+// Charger le top punchlineurs dans la colonne droite
+async function loadDesktopAside() {
+  if (!isDesktop()) return;
+  const container = document.getElementById('desktop-top-users');
+  if (!container) return;
+  try {
+    const snap = await getDocs(query(collection(db,'users'), orderBy('score','desc')));
+    const users = [];
+    snap.forEach(d => { if((d.data().score||0)>0) users.push({id:d.id,...d.data()}); });
+    if (!users.length) { container.innerHTML = '<p style="font-size:13px;color:var(--ink3)">Aucun encore.</p>'; return; }
+    const medals = ['🥇','🥈','🥉'];
+    container.innerHTML = users.slice(0,8).map((u,i) => `
+      <div class="desktop-top-user" onclick="openPubProfile('${u.id}')">
+        <div class="avatar avatar-sm">${avatarHTML(u)}</div>
+        <div>
+          <div class="desktop-top-user-name">${esc(u.name||'?')} ${medals[i]||''}</div>
+          <div class="desktop-top-user-score">${(u.followers||[]).length} abonnés</div>
+        </div>
+        <div class="desktop-top-user-pts">${u.score||0}</div>
+      </div>
+    `).join('');
+  } catch(e) { console.error('Desktop aside error:', e); }
+}
+
+// Adapter le layout desktop au chargement
+function initDesktop() {
+  if (!isDesktop()) return;
+  // Afficher le bouton poster desktop
+  const desktopBtn = document.getElementById('desktop-post-btn');
+  if (desktopBtn) desktopBtn.style.display = 'flex';
+  // Déplacer la bottom nav dans la topbar sidebar
+  const nav = document.getElementById('bottom-nav');
+  const topbar = document.getElementById('topbar');
+  if (nav && topbar) {
+    topbar.appendChild(nav);
+    nav.style.display = 'flex';
+  }
+  // Charger le aside
+  loadDesktopAside();
+}
+
+// Recharger le aside quand on se connecte
+const _origLoadProfile = loadProfile;
+window.addEventListener('load', () => {
+  initDesktop();
+});
+
+// Adapter au resize
+window.addEventListener('resize', () => {
+  if (isDesktop()) initDesktop();
+});
 </script>
 </body>
 </html>
