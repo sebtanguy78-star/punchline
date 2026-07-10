@@ -1847,7 +1847,7 @@ async function loadRanking() {
   const c=$('ranking-list'); c.innerHTML='<div class="loading"><div class="spinner"></div></div>';
   try {
     const snap=await getDocs(query(collection(db,'users'),orderBy('score','desc')));
-    const users=[]; snap.forEach(d=>users.push({id:d.id,...d.data()}));
+    const users=[]; snap.forEach(d=>{ if((d.data().score||0)>0) users.push({id:d.id,...d.data()}); });
     if (!users.length) { c.innerHTML='<div class="empty"><p>Aucun punchlineur encore.</p></div>'; return; }
     const medals=['🥇','🥈','🥉'];
     c.innerHTML = users.map((u,i)=>{
