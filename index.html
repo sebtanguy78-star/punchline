@@ -355,11 +355,15 @@ body.light .cat-biz   { background: rgba(6,95,70,.1); }
 .cat-vote-btn.smart { border-color: var(--smart); color: var(--smart); }
 .cat-vote-btn.love  { border-color: var(--love);  color: var(--love); }
 .cat-vote-btn.biz   { border-color: var(--biz);   color: var(--biz); }
-.cat-vote-btn.active.funny { background: rgba(245,245,0,.12); }
-.cat-vote-btn.active.smart { background: rgba(0,212,255,.12); }
-.cat-vote-btn.active.love  { background: rgba(255,78,138,.12); }
-.cat-vote-btn.active.biz   { background: rgba(0,229,160,.12); }
-body.light .cat-vote-btn.active.biz   { background: rgba(6,95,70,.1); }
+.cat-vote-btn { transition: all .15s ease; }
+.cat-vote-btn.active.funny { background: rgba(245,245,0,.3); border-color: var(--funny); font-weight: 800; transform: scale(1.07); }
+.cat-vote-btn.active.smart { background: rgba(0,212,255,.3); border-color: var(--smart); font-weight: 800; transform: scale(1.07); }
+.cat-vote-btn.active.love  { background: rgba(255,78,138,.3); border-color: var(--love);  font-weight: 800; transform: scale(1.07); }
+.cat-vote-btn.active.biz   { background: rgba(0,229,160,.3); border-color: var(--biz);   font-weight: 800; transform: scale(1.07); }
+body.light .cat-vote-btn.active.funny { background: rgba(180,83,9,.2); border-color: var(--funny); }
+body.light .cat-vote-btn.active.smart { background: rgba(29,78,216,.2); border-color: var(--smart); }
+body.light .cat-vote-btn.active.love  { background: rgba(190,24,93,.2); border-color: var(--love); }
+body.light .cat-vote-btn.active.biz   { background: rgba(6,95,70,.2); border-color: var(--biz); }
 .cat-vote-btn.top-cat { font-weight: 800; box-shadow: 0 0 0 2px currentColor; }
 body.light .cat-vote-btn.active.funny { background: rgba(180,83,9,.1); }
 body.light .cat-vote-btn.active.smart { background: rgba(29,78,216,.1); }
@@ -1014,10 +1018,10 @@ body.light .notif-item.unread { background: rgba(37,99,235,.04); }
 <div class="sheet-overlay" id="sheet-overlay" onclick="closeSheet()"></div>
 <div class="sheet" id="add-sheet">
   <div class="sheet-handle"></div>
-  <div class="sheet-title">Nouvelle Punchline</div>
+  <div class="sheet-title">Nouvelle Punchline <span style="font-size:12px;font-weight:500;color:var(--ink3);">(2 max / jour)</span></div>
   <div class="field">
     <label>Lien de la vidéo</label>
-    <input type="url" id="post-url" placeholder="https://www.tiktok.com/…"/>
+    <input type="url" id="post-url" placeholder="Colle le lien de ta vidéo ici…"/>
   </div>
   <div class="field">
     <label>Ton commentaire</label>
@@ -1924,9 +1928,13 @@ async function loadCatPosts(cat) {
     const snap = await getDocs(collection(db,'posts'));
     let posts = [];
     snap.forEach(d => posts.push({id:d.id,...d.data()}));
-    // Trier par score côté client
+    // Trier par date (plus récent en premier) pour 'all', par score de catégorie sinon
     if (cat === 'all') {
-      posts.sort((a,b) => (b.score||0) - (a.score||0));
+      posts.sort((a,b) => {
+        const da = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt||0);
+        const db2 = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt||0);
+        return db2 - da;
+      });
     } else {
       posts = posts
         .filter(p => (p.cats?.[cat]||0) > 0)
