@@ -1648,7 +1648,7 @@ function bindPostEvents(container, posts, isOwn) {
     btn.addEventListener('click', () => toggleLike(btn.dataset.like, btn.dataset.owner, btn));
   });
   container.querySelectorAll('[data-cat]').forEach(btn => {
-    btn.addEventListener('click', () => voteCat(btn.dataset.pid, btn.dataset.cat, btn.dataset.owner));
+    btn.addEventListener('click', () => voteCat(btn.dataset.pid, btn.dataset.cat, btn.dataset.owner, btn));
   });
   container.querySelectorAll('[data-share]').forEach(btn => {
     btn.addEventListener('click', () => sharePost(btn.dataset.share));
@@ -1690,19 +1690,19 @@ async function toggleLike(pid, ownerUid, btn) {
 }
 
 /* ── VOTE CATÉGORIE ── */
-async function voteCat(pid, cat, ownerUid) {
+async function voteCat(pid, cat, ownerUid, clickedBtn) {
   if (!CU) return toast('Connecte-toi pour voter.');
   if (CU.uid===ownerUid) return toast('Tu ne votes pas pour toi-même.');
+
   const pRef = doc(db,'posts',pid);
   const snap = await getDoc(pRef);
   if (!snap.exists()) return;
   const p = snap.data();
   const prev = (p.catVotes||{})[CU.uid];
   const liked = (p.likedBy||[]).includes(CU.uid);
-  const up = {};
-  const uup = {};
+  const up = {}, uup = {};
+
   if (prev===cat) {
-    // Retirer le vote
     up[`cats.${cat}`]=increment(-1); up[`catVotes.${CU.uid}`]=deleteField();
     if (!liked) { up.score=increment(-1); uup.score=increment(-1); }
     uup[`cats.${cat}`]=increment(-1);
@@ -1714,11 +1714,28 @@ async function voteCat(pid, cat, ownerUid) {
     if (!prev&&!liked) { up.score=increment(1); uup.score=increment(1); }
     toast(`${CATS[cat]?.label} voté !`);
   }
+
   await Promise.all([updateDoc(pRef,up), updateDoc(doc(db,'users',ownerUid),uup)]);
   dirty=true;
-  // Recharger la zone de post pour mettre à jour les boutons
-  const page = $('page-pub-profile').classList.contains('active') ? 'pub' : 'own';
-  if (page==='own') loadOwnPosts(); else openPubProfile(ownerUid);
+
+  // Mettre à jour les boutons directement dans le DOM (pas de rechargement)
+  if (clickedBtn) {
+    const container = clickedBtn.closest('.cat-vote-row');
+    if (container) {
+      // Retirer active de tous les boutons du même post
+      container.querySelectorAll('.cat-vote-btn').forEach(b => {
+        b.classList.remove('active');
+      });
+      // Ajouter active sur le bouton cliqué (sauf si on retire le vote)
+      if (prev !== cat) {
+        clickedBtn.classList.add('active');
+      }
+    }
+  } else {
+    // Fallback : recharger si pas de référence au bouton
+    const page = $('page-pub-profile').classList.contains('active') ? 'pub' : 'own';
+    if (page==='own') loadOwnPosts(); else openPubProfile(ownerUid);
+  }
 }
 
 /* ── AJOUTER POST ── */
@@ -1885,7 +1902,7 @@ window.openSharePost = async function(pid) {
   </div>`;
   // Bind events
   c.querySelectorAll('[data-scat]').forEach(btn => {
-    btn.onclick = async () => { await voteCat(btn.dataset.spid, btn.dataset.scat, btn.dataset.sowner); openSharePost(pid); };
+    btn.onclick = async () => { await voteCat(btn.dataset.spid, btn.dataset.scat, btn.dataset.sowner, btn); openSharePost(pid); };
   });
   // Si la miniature n'était pas encore en cache au moment du rendu, on l'affiche maintenant
   if (p.videoUrl && !isIG && !prefetchedThumbUrl) {
@@ -1991,7 +2008,7 @@ async function renderHomePosts(posts) {
     </div>`;
   }).join('');
   pc.querySelectorAll('[data-like]').forEach(btn=>btn.addEventListener('click',()=>toggleLike(btn.dataset.like,btn.dataset.owner,btn)));
-  pc.querySelectorAll('[data-cat]').forEach(btn=>btn.addEventListener('click',()=>{ catCache={}; voteCat(btn.dataset.pid,btn.dataset.cat,btn.dataset.owner); }));
+  pc.querySelectorAll('[data-cat]').forEach(btn=>btn.addEventListener('click',()=>{ catCache={}; voteCat(btn.dataset.pid,btn.dataset.cat,btn.dataset.owner,btn); }));
   hydrateThumb(pc, posts);
 }
 
