@@ -344,7 +344,8 @@ body.light .cat-biz   { background: rgba(6,95,70,.1); }
 .post-score-inline { font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 13px; color: var(--yellow); margin-left: 4px; }
 .post-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
 .like-btn { display: none !important; }
-.cat-vote-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.cat-vote-row { display: flex; gap: 6px; flex-wrap: nowrap; margin-top: 10px; overflow-x: auto; scrollbar-width: none; }
+.cat-vote-row::-webkit-scrollbar { display: none; }
 .cat-vote-btn {
   padding: 5px 11px; border-radius: 20px; border: 1px solid transparent;
   cursor: pointer; font-size: 12px; font-weight: 600;
@@ -356,18 +357,15 @@ body.light .cat-biz   { background: rgba(6,95,70,.1); }
 .cat-vote-btn.love  { border-color: var(--love);  color: var(--love); }
 .cat-vote-btn.biz   { border-color: var(--biz);   color: var(--biz); }
 .cat-vote-btn { transition: all .15s ease; position: relative; overflow: visible; }
-.cat-vote-btn .cat-emoji-pop {
-  position: absolute; top: -28px; left: 50%; transform: translateX(-50%) scale(0);
-  font-size: 22px; pointer-events: none; z-index: 10;
-  animation: none;
+.emoji-rain-particle {
+  position: fixed; pointer-events: none; z-index: 9999;
+  font-size: 24px; user-select: none;
+  animation: rainFall .9s ease-out forwards;
 }
-.cat-vote-btn.popping .cat-emoji-pop {
-  animation: emojiPop .6s ease forwards;
-}
-@keyframes emojiPop {
-  0%   { transform: translateX(-50%) scale(0) translateY(0); opacity: 1; }
-  50%  { transform: translateX(-50%) scale(1.4) translateY(-8px); opacity: 1; }
-  100% { transform: translateX(-50%) scale(1) translateY(-16px); opacity: 0; }
+@keyframes rainFall {
+  0%   { transform: translateY(0) scale(0.5) rotate(0deg); opacity: 1; }
+  60%  { opacity: 1; }
+  100% { transform: translateY(-120px) scale(1.2) rotate(var(--rot)); opacity: 0; }
 }
 .cat-vote-btn.active.funny { background: rgba(245,245,0,.3); border-color: var(--funny); font-weight: 800; transform: scale(1.07); }
 .cat-vote-btn.active.smart { background: rgba(0,212,255,.3); border-color: var(--smart); font-weight: 800; transform: scale(1.07); }
@@ -833,7 +831,7 @@ body.light .notif-item.unread { background: rgba(37,99,235,.04); }
     <div id="home-top-users" class="story-scroll"></div>
     <div class="cat-tabs" id="cat-tabs">
       <button class="cat-tab active-all" onclick="filterCat('all')">✨ Tout</button>
-      <button class="cat-tab" onclick="filterCat('funny')">🔥 Masterclass</button>
+      <button class="cat-tab" onclick="filterCat('funny')">🔥 Légende</button>
       <button class="cat-tab" onclick="filterCat('smart')">🧠 200 IQ</button>
       <button class="cat-tab" onclick="filterCat('love')">💀 TKO</button>
       <button class="cat-tab" onclick="filterCat('biz')">🚫 Banni</button>
@@ -1152,7 +1150,7 @@ if (isNative) {
 
 /* ── CONSTANTES ── */
 const CATS = {
-  funny: { label: 'Masterclass', emoji: '🔥', color: '#F5F500' },
+  funny: { label: 'Légende', emoji: '🔥', color: '#F5F500' },
   smart: { label: '200 IQ',      emoji: '🧠', color: '#00D4FF' },
   love:  { label: 'TKO',         emoji: '💀', color: '#FF4E8A' },
   biz:   { label: 'Banni',       emoji: '🚫', color: '#00E5A0' },
@@ -1632,7 +1630,7 @@ function postCardHTML(p, isOwn) {
     }
   }
   const catBtns = Object.entries(CATS).map(([k,c])=>`
-    <button class="cat-vote-btn ${k}${myVote===k?' active':''}" data-cat="${k}" data-pid="${p.id}" data-owner="${p.uid}" ${isOwn?'disabled':''}>
+    <button class="cat-vote-btn ${k}${myVote===k?' active':''}" data-cat="${k}" data-pid="${p.id}" data-owner="${p.uid}" ${isOwn?'disabled':''} data-emoji="${c.emoji}">
       ${c.label}
     </button>`).join('');
   const deleteBtn = isOwn ? `<button class="btn btn-sm" style="color:var(--danger);border:1px solid var(--danger);background:none;border-radius:8px;margin-left:auto;" data-delete="${p.id}">Supprimer</button>` : '';
@@ -1703,6 +1701,29 @@ async function toggleLike(pid, ownerUid, btn) {
 }
 
 /* ── VOTE CATÉGORIE ── */
+// Pluie d'emojis réutilisable
+function spawnEmojiRain(btn) {
+  if (!btn) return;
+  const emoji = btn.dataset.emoji || '🔥';
+  const rect = btn.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top;
+  for (let i = 0; i < 12; i++) {
+    const el = document.createElement('div');
+    el.className = 'emoji-rain-particle';
+    el.textContent = emoji;
+    const xOff = (Math.random() * 100 - 50);
+    const rot = (Math.random() * 180 - 90);
+    el.style.setProperty('--rot', rot + 'deg');
+    el.style.left = (cx + xOff) + 'px';
+    el.style.top = cy + 'px';
+    el.style.animationDelay = (Math.random() * 0.3) + 's';
+    el.style.fontSize = (16 + Math.random() * 18) + 'px';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 1300);
+  }
+}
+
 async function voteCat(pid, cat, ownerUid, clickedBtn) {
   if (!CU) return toast('Connecte-toi pour voter.');
   if (CU.uid===ownerUid) return toast('Tu ne votes pas pour toi-même.');
@@ -1738,11 +1759,7 @@ async function voteCat(pid, cat, ownerUid, clickedBtn) {
       container.querySelectorAll('.cat-vote-btn').forEach(b => b.classList.remove('active'));
       if (prev !== cat) {
         clickedBtn.classList.add('active');
-        // Animation emoji pop
-        clickedBtn.classList.remove('popping');
-        void clickedBtn.offsetWidth; // force reflow
-        clickedBtn.classList.add('popping');
-        setTimeout(() => clickedBtn.classList.remove('popping'), 700);
+        spawnEmojiRain(clickedBtn);
       }
     }
   } else {
@@ -1897,7 +1914,7 @@ window.openSharePost = async function(pid) {
   const catBtns=Object.entries(CATS).map(([k,cv2])=>{
     const mv=(CU&&(p.catVotes||{})[CU.uid]);
     const isTop = k===topCat && (catTotals[k]||0)>0;
-    return `<button class="cat-vote-btn ${k}${mv===k?' active':''}${isTop?' top-cat':''}" data-scat="${k}" data-spid="${pid}" data-sowner="${p.uid}" ${isOwn?'disabled':''}><span class="cat-emoji-pop">${cv2.emoji}</span>${cv2.emoji} ${cv2.label}${isTop?' ✦':''}</button>`;
+    return `<button class="cat-vote-btn ${k}${mv===k?' active':''}${isTop?' top-cat':''}" data-scat="${k}" data-spid="${pid}" data-sowner="${p.uid}" ${isOwn?'disabled':''} data-emoji="${cv2.emoji}">${cv2.label}${isTop?' ✦':''}</button>`;
   }).join('');
   c.innerHTML=`<div class="share-author" onclick="openPubProfile('${p.uid}')">
     <div class="avatar avatar-md">${avatarHTML(u)}</div>
@@ -2005,7 +2022,7 @@ async function renderHomePosts(posts) {
         thumbHTML=`<a href="${esc(p.videoUrl)}" target="_blank" rel="noopener" style="display:block;text-decoration:none;"><div class="thumb-wrap" data-thumb="${esc(p.id)}">${net}</div></a>`;
       }
     }
-    const catBtns=Object.entries(CATS).map(([k,c])=>`<button class="cat-vote-btn ${k}${myVote===k?' active':''}" data-cat="${k}" data-pid="${p.id}" data-owner="${p.uid}" ${isOwn?'disabled':''}><span class="cat-emoji-pop">${c.emoji}</span>${c.emoji} ${c.label}</button>`).join('');
+    const catBtns=Object.entries(CATS).map(([k,c])=>`<button class="cat-vote-btn ${k}${myVote===k?' active':''}" data-cat="${k}" data-pid="${p.id}" data-owner="${p.uid}" ${isOwn?'disabled':''} data-emoji="${c.emoji}">${c.label}</button>`).join('');
     return `<div class="card post-card" id="hpc-${p.id}" style="position:relative;">
       ${hdate?`<div class="post-date">${hdate}</div>`:''}
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;cursor:pointer;" onclick="openPubProfile('${p.uid}')">
