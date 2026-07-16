@@ -355,7 +355,20 @@ body.light .cat-biz   { background: rgba(6,95,70,.1); }
 .cat-vote-btn.smart { border-color: var(--smart); color: var(--smart); }
 .cat-vote-btn.love  { border-color: var(--love);  color: var(--love); }
 .cat-vote-btn.biz   { border-color: var(--biz);   color: var(--biz); }
-.cat-vote-btn { transition: all .15s ease; }
+.cat-vote-btn { transition: all .15s ease; position: relative; overflow: visible; }
+.cat-vote-btn .cat-emoji-pop {
+  position: absolute; top: -28px; left: 50%; transform: translateX(-50%) scale(0);
+  font-size: 22px; pointer-events: none; z-index: 10;
+  animation: none;
+}
+.cat-vote-btn.popping .cat-emoji-pop {
+  animation: emojiPop .6s ease forwards;
+}
+@keyframes emojiPop {
+  0%   { transform: translateX(-50%) scale(0) translateY(0); opacity: 1; }
+  50%  { transform: translateX(-50%) scale(1.4) translateY(-8px); opacity: 1; }
+  100% { transform: translateX(-50%) scale(1) translateY(-16px); opacity: 0; }
+}
 .cat-vote-btn.active.funny { background: rgba(245,245,0,.3); border-color: var(--funny); font-weight: 800; transform: scale(1.07); }
 .cat-vote-btn.active.smart { background: rgba(0,212,255,.3); border-color: var(--smart); font-weight: 800; transform: scale(1.07); }
 .cat-vote-btn.active.love  { background: rgba(255,78,138,.3); border-color: var(--love);  font-weight: 800; transform: scale(1.07); }
@@ -819,11 +832,11 @@ body.light .notif-item.unread { background: rgba(37,99,235,.04); }
   <div id="page-home" class="page">
     <div id="home-top-users" class="story-scroll"></div>
     <div class="cat-tabs" id="cat-tabs">
-      <button class="cat-tab active-all" onclick="filterCat('all')">🔥 Tout</button>
-      <button class="cat-tab" onclick="filterCat('funny')">Goat</button>
-      <button class="cat-tab" onclick="filterCat('smart')">Malin</button>
-      <button class="cat-tab" onclick="filterCat('love')">Loveur</button>
-      <button class="cat-tab" onclick="filterCat('biz')">Assassin</button>
+      <button class="cat-tab active-all" onclick="filterCat('all')">✨ Tout</button>
+      <button class="cat-tab" onclick="filterCat('funny')">🔥 Masterclass</button>
+      <button class="cat-tab" onclick="filterCat('smart')">🧠 200 IQ</button>
+      <button class="cat-tab" onclick="filterCat('love')">💀 TKO</button>
+      <button class="cat-tab" onclick="filterCat('biz')">🚫 Banni</button>
     </div>
     <div class="posts-list" id="home-top-posts"></div>
   </div>
@@ -1139,10 +1152,10 @@ if (isNative) {
 
 /* ── CONSTANTES ── */
 const CATS = {
-  funny: { label: 'Goat',      color: '#F5F500' },
-  smart: { label: 'Malin',     color: '#00D4FF' },
-  love:  { label: 'Loveur',    color: '#FF4E8A' },
-  biz:   { label: 'Assassin',  color: '#00E5A0' },
+  funny: { label: 'Masterclass', emoji: '🔥', color: '#F5F500' },
+  smart: { label: '200 IQ',      emoji: '🧠', color: '#00D4FF' },
+  love:  { label: 'TKO',         emoji: '💀', color: '#FF4E8A' },
+  biz:   { label: 'Banni',       emoji: '🚫', color: '#00E5A0' },
 };
 const IG_SVG = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="white" stroke="none"/></svg>`;
 const TT_SVG = `<svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M16.5 3c.4 2.2 1.9 3.8 4.5 4v3c-1.6 0-3-.5-4.5-1.4v6.5c0 3.6-2.9 6.4-6.5 6.4S3.5 18.7 3.5 15.1c0-3.5 2.7-6.3 6.2-6.4v3.1c-1.8.1-3.2 1.5-3.2 3.3 0 1.8 1.5 3.3 3.3 3.3s3.3-1.5 3.3-3.3V3h3.4z"/></svg>`;
@@ -1722,13 +1735,14 @@ async function voteCat(pid, cat, ownerUid, clickedBtn) {
   if (clickedBtn) {
     const container = clickedBtn.closest('.cat-vote-row');
     if (container) {
-      // Retirer active de tous les boutons du même post
-      container.querySelectorAll('.cat-vote-btn').forEach(b => {
-        b.classList.remove('active');
-      });
-      // Ajouter active sur le bouton cliqué (sauf si on retire le vote)
+      container.querySelectorAll('.cat-vote-btn').forEach(b => b.classList.remove('active'));
       if (prev !== cat) {
         clickedBtn.classList.add('active');
+        // Animation emoji pop
+        clickedBtn.classList.remove('popping');
+        void clickedBtn.offsetWidth; // force reflow
+        clickedBtn.classList.add('popping');
+        setTimeout(() => clickedBtn.classList.remove('popping'), 700);
       }
     }
   } else {
@@ -1883,7 +1897,7 @@ window.openSharePost = async function(pid) {
   const catBtns=Object.entries(CATS).map(([k,cv2])=>{
     const mv=(CU&&(p.catVotes||{})[CU.uid]);
     const isTop = k===topCat && (catTotals[k]||0)>0;
-    return `<button class="cat-vote-btn ${k}${mv===k?' active':''}${isTop?' top-cat':''}" data-scat="${k}" data-spid="${pid}" data-sowner="${p.uid}" ${isOwn?'disabled':''}>${cv2.label}${isTop?' ✦':''}</button>`;
+    return `<button class="cat-vote-btn ${k}${mv===k?' active':''}${isTop?' top-cat':''}" data-scat="${k}" data-spid="${pid}" data-sowner="${p.uid}" ${isOwn?'disabled':''}><span class="cat-emoji-pop">${cv2.emoji}</span>${cv2.emoji} ${cv2.label}${isTop?' ✦':''}</button>`;
   }).join('');
   c.innerHTML=`<div class="share-author" onclick="openPubProfile('${p.uid}')">
     <div class="avatar avatar-md">${avatarHTML(u)}</div>
@@ -1991,7 +2005,7 @@ async function renderHomePosts(posts) {
         thumbHTML=`<a href="${esc(p.videoUrl)}" target="_blank" rel="noopener" style="display:block;text-decoration:none;"><div class="thumb-wrap" data-thumb="${esc(p.id)}">${net}</div></a>`;
       }
     }
-    const catBtns=Object.entries(CATS).map(([k,c])=>`<button class="cat-vote-btn ${k}${myVote===k?' active':''}" data-cat="${k}" data-pid="${p.id}" data-owner="${p.uid}" ${isOwn?'disabled':''}>${c.label}</button>`).join('');
+    const catBtns=Object.entries(CATS).map(([k,c])=>`<button class="cat-vote-btn ${k}${myVote===k?' active':''}" data-cat="${k}" data-pid="${p.id}" data-owner="${p.uid}" ${isOwn?'disabled':''}><span class="cat-emoji-pop">${c.emoji}</span>${c.emoji} ${c.label}</button>`).join('');
     return `<div class="card post-card" id="hpc-${p.id}" style="position:relative;">
       ${hdate?`<div class="post-date">${hdate}</div>`:''}
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;cursor:pointer;" onclick="openPubProfile('${p.uid}')">
