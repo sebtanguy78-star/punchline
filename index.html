@@ -839,7 +839,9 @@ body.light .notif-item.unread { background: rgba(37,99,235,.04); }
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
         <span id="notif-badge"></span>
       </div>
-      <button class="avatar-btn" id="topbar-avatar" onclick="openSettings()" style="display:none">?</button>
+      <button class="icon-btn" id="topbar-avatar" onclick="openSettings()" style="display:none;" title="Réglages">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
     </div>
     <button id="desktop-post-btn" onclick="openSheet()" style="display:none;">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
@@ -933,7 +935,10 @@ body.light .notif-item.unread { background: rgba(37,99,235,.04); }
         <div class="stat-item"><span class="stat-num" id="own-stat-score">0</span><span class="stat-label">Score</span></div>
       </div>
       <div class="profile-style-card card" id="own-style-card" style="display:none;">
-        <div id="own-cat-badge"></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <div id="own-cat-badge"></div>
+          <button onclick="openInfoPopup()" style="background:none;border:1px solid var(--border);border-radius:50%;width:22px;height:22px;font-size:11px;font-weight:700;color:var(--ink3);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">i</button>
+        </div>
         <div class="score-bars" id="own-score-bars"></div>
       </div>
     </div>
@@ -978,7 +983,10 @@ body.light .notif-item.unread { background: rgba(37,99,235,.04); }
         </button>
       </div>
       <div class="profile-style-card card" style="margin-top:14px;">
-        <div id="pub-cat-badge"></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <div id="pub-cat-badge"></div>
+          <button onclick="openInfoPopup()" style="background:none;border:1px solid var(--border);border-radius:50%;width:22px;height:22px;font-size:11px;font-weight:700;color:var(--ink3);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">i</button>
+        </div>
         <div class="score-bars" id="pub-score-bars"></div>
       </div>
     </div>
@@ -1074,7 +1082,19 @@ body.light .notif-item.unread { background: rgba(37,99,235,.04); }
 <div class="modal-overlay" id="settings-modal">
   <div class="modal-box">
     <div class="modal-title">Réglages</div>
-    <p id="settings-email" style="font-size:13px;color:var(--ink3);margin-bottom:14px;"></p>
+    <p id="settings-email" style="font-size:12px;color:var(--ink3);margin-bottom:14px;"></p>
+
+    <!-- Modifier pseudo -->
+    <div style="margin-bottom:14px;">
+      <div style="font-size:13px;font-weight:700;margin-bottom:6px;">Pseudo</div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input type="text" id="settings-pseudo-input" placeholder="Nouveau pseudo" maxlength="20" oninput="checkSettingsPseudo()" style="flex:1;"/>
+        <button class="btn btn-primary btn-sm" onclick="saveNewPseudo()" id="settings-pseudo-btn" disabled>OK</button>
+      </div>
+      <p id="settings-pseudo-status" style="font-size:12px;margin-top:4px;min-height:16px;"></p>
+    </div>
+
+    <div class="modal-hr"></div>
     <div class="toggle-row" id="photo-toggle-row" style="display:none;">
       <div><div class="toggle-label">Photo Google</div><div class="toggle-sub">Afficher ta photo sur ton profil</div></div>
       <label class="toggle-switch"><input type="checkbox" id="toggle-photo" onchange="togglePhoto(this.checked)"/><span class="toggle-slider"></span></label>
@@ -1084,6 +1104,13 @@ body.light .notif-item.unread { background: rgba(37,99,235,.04); }
       <label class="toggle-switch"><input type="checkbox" id="toggle-theme" onchange="toggleTheme(this.checked)"/><span class="toggle-slider"></span></label>
     </div>
     <div class="modal-hr"></div>
+
+    <!-- À propos -->
+    <div style="background:var(--card2);border-radius:10px;padding:14px;margin-bottom:14px;">
+      <div style="font-size:13px;font-weight:700;margin-bottom:6px;">✨ myPunchline</div>
+      <p style="font-size:12px;color:var(--ink2);line-height:1.7;">Mets en lumière les meilleurs commentaires sur les vidéos de tes réseaux préférés. Vote pour un style, grimpe dans le classement et deviens un punchlineur légendaire.</p>
+    </div>
+
     <button class="btn btn-danger btn-full" onclick="doLogout()" style="margin-bottom:10px;">Se déconnecter</button>
     <button class="btn btn-ghost btn-full" onclick="closeSettings()">Fermer</button>
   </div>
@@ -1120,6 +1147,33 @@ body.light .notif-item.unread { background: rgba(37,99,235,.04); }
     <div id="follow-list"></div>
     <div class="modal-hr"></div>
     <button class="btn btn-ghost btn-full" onclick="document.getElementById('follow-modal').classList.remove('open')">Fermer</button>
+  </div>
+</div>
+
+<!-- MODAL : INFO POINTS -->
+<div class="modal-overlay" id="info-modal">
+  <div class="modal-box">
+    <div class="modal-title">Comment les points fonctionnent ?</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--card2);border-radius:10px;">
+        <span style="font-weight:700;">🔥 Légende</span>
+        <span style="font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:18px;color:var(--yellow);">+2 pts</span>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--card2);border-radius:10px;">
+        <span style="font-weight:700;">🧠 200 IQ</span>
+        <span style="font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:18px;color:var(--yellow);">+1 pt</span>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--card2);border-radius:10px;">
+        <span style="font-weight:700;">💀 TKO</span>
+        <span style="font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:18px;color:var(--yellow);">+1 pt</span>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--card2);border-radius:10px;">
+        <span style="font-weight:700;">🚫 Banni</span>
+        <span style="font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:18px;color:var(--ink3);">0 pt</span>
+      </div>
+    </div>
+    <p style="font-size:12px;color:var(--ink3);line-height:1.7;margin-bottom:14px;">Un seul vote par personne par post. Changer de catégorie ne rapporte pas de point supplémentaire.</p>
+    <button class="btn btn-ghost btn-full" onclick="document.getElementById('info-modal').classList.remove('open')">Compris</button>
   </div>
 </div>
 
@@ -1259,7 +1313,7 @@ function scoreBarsHTML(cats, total) {
     const pct = Math.round(v/max*100);
     return `<div class="score-bar-row">
       <span class="score-bar-label">${c.label}</span>
-      <div class="score-bar-track"><div class="score-bar-fill" style="width:${pct}%;background:${c.color}"></div></div>
+      <div class="score-bar-track"><div class="score-bar-fill" style="width:${pct}%;background:var(--yellow)"></div></div>
       <span class="score-bar-val">${v}</span>
     </div>`;
   }).join('');
@@ -1812,15 +1866,26 @@ async function voteCat(pid, cat, ownerUid, clickedBtn) {
   const up = {}, uup = {};
 
   if (prev===cat) {
+    const removePts = cat==='funny' ? 2 : cat==='biz' ? 0 : 1;
     up[`cats.${cat}`]=increment(-1); up[`catVotes.${CU.uid}`]=deleteField();
-    if (!liked) { up.score=increment(-1); uup.score=increment(-1); }
+    if (!liked && removePts > 0) { up.score=increment(-removePts); uup.score=increment(-removePts); }
     uup[`cats.${cat}`]=increment(-1);
     toast('Vote retiré.');
   } else {
+    const catPoints = cat==='funny' ? 2 : cat==='biz' ? 0 : 1;
+    const prevPoints = prev ? (prev==='funny' ? 2 : prev==='biz' ? 0 : 1) : 0;
     if (prev) { up[`cats.${prev}`]=increment(-1); uup[`cats.${prev}`]=increment(-1); }
     up[`cats.${cat}`]=increment(1); up[`catVotes.${CU.uid}`]=cat;
     uup[`cats.${cat}`]=increment(1);
-    if (!prev&&!liked) { up.score=increment(1); uup.score=increment(1); }
+    // Ajuster le score selon les points de chaque catégorie
+    if (!prev && !liked) {
+      // Premier vote, pas encore de like
+      if (catPoints > 0) { up.score=increment(catPoints); uup.score=increment(catPoints); }
+    } else if (prev && !liked) {
+      // Changement de catégorie — ajuster la différence de points
+      const diff = catPoints - prevPoints;
+      if (diff !== 0) { up.score=increment(diff); uup.score=increment(diff); }
+    }
     toast(`${CATS[cat]?.label} voté !`);
   }
 
@@ -2348,6 +2413,11 @@ function renderNotifs(el, notifs, um={}) {
 window.openSettings = function() {
   $('toggle-theme').checked = document.body.classList.contains('light');
   $('toggle-photo').checked = !!(CUD?.showPhoto);
+  // Pré-remplir le pseudo actuel
+  const pi = $('settings-pseudo-input');
+  if (pi) { pi.placeholder = CUD?.name || 'Nouveau pseudo'; pi.value=''; }
+  const ps = $('settings-pseudo-status'); if (ps) ps.textContent='';
+  const pb = $('settings-pseudo-btn'); if (pb) pb.disabled=true;
   // Vérifier si connecté via Google en lisant directement auth.currentUser
   const isGoogleUser = auth.currentUser?.providerData?.some(p => p.providerId === 'google.com') || false;
   const photoRow = document.getElementById('photo-toggle-row');
@@ -2461,6 +2531,51 @@ async function loadOwnRank() {
     });
   } catch(e) { $('own-rank').textContent = '#—'; }
 }
+
+/* ── INFO POPUP ── */
+window.openInfoPopup = function() {
+  document.getElementById('info-modal').classList.add('open');
+};
+
+/* ── MODIFIER PSEUDO ── */
+let pseudoCheckTimer2 = null;
+window.checkSettingsPseudo = function() {
+  const inp = $('settings-pseudo-input');
+  const val = inp.value.trim().replace(/\s+/g,'');
+  inp.value = val;
+  const st = $('settings-pseudo-status');
+  const btn = $('settings-pseudo-btn');
+  btn.disabled = true;
+  if (!val || val.length < 3) { st.textContent=''; st.style.color=''; return; }
+  if (!/^[a-zA-Z0-9_]+$/.test(val)) { st.textContent='Lettres, chiffres et _ uniquement.'; st.style.color='var(--danger)'; return; }
+  if (val.toLowerCase() === (CUD?.name||'').toLowerCase()) { st.textContent="C'est déjà ton pseudo."; st.style.color='var(--ink3)'; return; }
+  st.textContent='Vérification…'; st.style.color='var(--ink3)';
+  clearTimeout(pseudoCheckTimer2);
+  pseudoCheckTimer2 = setTimeout(async () => {
+    const q = await getDocs(query(collection(db,'users'), where('nameLower','==',val.toLowerCase())));
+    if (q.empty) { st.textContent='✓ Disponible'; st.style.color='var(--biz)'; btn.disabled=false; }
+    else { st.textContent='✗ Déjà pris'; st.style.color='var(--danger)'; }
+  }, 400);
+};
+
+window.saveNewPseudo = async function() {
+  if (!CU) return;
+  const val = $('settings-pseudo-input').value.trim();
+  const btn = $('settings-pseudo-btn');
+  btn.disabled=true; btn.textContent='…';
+  try {
+    await updateDoc(doc(db,'users',CU.uid), { name: val, nameLower: val.toLowerCase() });
+    if (CUD) { CUD.name=val; CUD.nameLower=val.toLowerCase(); }
+    dirty=true;
+    $('settings-pseudo-status').textContent='Pseudo modifié !';
+    $('settings-pseudo-status').style.color='var(--biz)';
+    $('settings-pseudo-input').value='';
+    renderProfile();
+    toast('Pseudo modifié !');
+    setTimeout(()=>{ $('settings-pseudo-status').textContent=''; }, 2000);
+  } catch(e) { toast('Erreur : '+e.message); }
+  btn.disabled=false; btn.textContent='OK';
+};
 
 /* ── SERVICE WORKER ── */
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{});
