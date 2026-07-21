@@ -490,8 +490,28 @@ body.light .cat-vote-btn.active.biz   { background: rgba(6,95,70,.1); }
 }
 .r-card:active { opacity: .8; }
 .r-card.is-me { border-color: var(--yellow); }
-.r-rank { font-size: 18px; width: 28px; text-align: center; flex-shrink: 0; }
-.r-rank-num { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 13px; color: var(--ink3); }
+.r-rank { width: 32px; text-align: center; flex-shrink: 0; }
+.r-rank-num { font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 15px; color: var(--ink3); }
+.r-rank-1 { font-family: 'Space Grotesk', sans-serif; font-weight: 900; font-size: 22px; color: #FFD700; text-shadow: 0 0 12px rgba(255,215,0,.4); }
+.r-rank-2 { font-family: 'Space Grotesk', sans-serif; font-weight: 900; font-size: 20px; color: #C0C0C0; text-shadow: 0 0 10px rgba(192,192,192,.3); }
+.r-rank-3 { font-family: 'Space Grotesk', sans-serif; font-weight: 900; font-size: 19px; color: #CD7F32; text-shadow: 0 0 10px rgba(205,127,50,.3); }
+/* Reflet sur les 3 premiers */
+.r-card.rank-top { position: relative; overflow: hidden; }
+.r-card.rank-top::after {
+  content: ''; position: absolute; top: 0; left: -60%;
+  width: 40%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.06), transparent);
+  transform: skewX(-15deg);
+  animation: shimmer 3s ease-in-out infinite;
+}
+.r-card.rank-1::after { background: linear-gradient(90deg, transparent, rgba(255,215,0,.08), transparent); }
+.r-card.rank-2::after { background: linear-gradient(90deg, transparent, rgba(192,192,192,.06), transparent); }
+.r-card.rank-3::after { background: linear-gradient(90deg, transparent, rgba(205,127,50,.06), transparent); }
+@keyframes shimmer { 0%,100% { left: -60%; } 50% { left: 120%; } }
+/* Bordure subtile selon rang */
+.r-card.rank-1 { border-color: rgba(255,215,0,.3); }
+.r-card.rank-2 { border-color: rgba(192,192,192,.25); }
+.r-card.rank-3 { border-color: rgba(205,127,50,.25); }
 .r-info { flex: 1; min-width: 0; }
 .r-name { font-weight: 700; font-size: 14px; color: var(--ink); display: flex; align-items: center; gap: 6px; }
 .r-name-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -2288,18 +2308,18 @@ async function loadRanking() {
     const snap=await getDocs(query(collection(db,'users'),orderBy('score','desc')));
     const users=[]; snap.forEach(d=>{ if((d.data().score||0)>0) users.push({id:d.id,...d.data()}); });
     if (!users.length) { c.innerHTML='<div class="empty"><p>Aucun punchlineur encore.</p></div>'; return; }
-    const medals=['🥇','🥈','🥉'];
+    
     c.innerHTML = users.map((u,i)=>{
       const isMe=CU&&u.id===CU.uid;
       const isF=CU&&(u.followers||[]).includes(CU.uid);
       const dom=domCat(u.cats);
       const newPost=u.lastPostAt&&(() => { try{const s=JSON.parse(localStorage.getItem('pl_seen')||'{}'); return u.lastPostAt>(s[u.id]||0); }catch{return false;} })();
-      return `<div class="r-card${isMe?' is-me':''}" onclick="markSeen('${u.id}'); openPubProfile('${u.id}')">
-        <div class="r-rank">${medals[i]||`<span class="r-rank-num">#${i+1}</span>`}</div>
+      return `<div class="r-card${isMe?' is-me':''}${i<3?' rank-top rank-'+(i+1):''}" onclick="markSeen('${u.id}'); openPubProfile('${u.id}')">
+        <div class="r-rank">${i<3?`<span class="${['r-rank-1','r-rank-2','r-rank-3'][i]}">#${i+1}</span>`:`<span class="r-rank-num">#${i+1}</span>`}</div>
         <div class="avatar avatar-sm">${avatarHTML(u)}</div>
         <div class="r-info">
           <div class="r-name">${newPost?'<div class="r-new-dot"></div>':''}<span class="r-name-text">${esc(u.name||'?')}</span>${isMe?'<span class="r-me-tag">toi</span>':''}</div>
-          <div class="r-sub">${(u.score||0)>0 ? catPill(dom) : ''}</div>
+
         </div>
         <div class="r-score">${u.score||0}<span class="r-score-label">pts</span></div>
         ${(!isMe&&CU)?`<button class="r-follow-btn${isF?' following':''}" data-following="${isF?'1':'0'}" onclick="event.stopPropagation();quickFollow('${u.id}',this)" title="${isF?'Abonné':'Suivre'}">${isF?SVG_FOLLOWING:SVG_FOLLOW}</button>`:''}
@@ -2318,15 +2338,15 @@ async function loadTopPosts() {
     const uids=[...new Set(posts.map(p=>p.uid))];
     const usnaps=await Promise.all(uids.map(id=>getDoc(doc(db,'users',id))));
     const um={}; usnaps.forEach(s=>{if(s.exists())um[s.id]=s.data();});
-    const medals=['🥇','🥈','🥉'];
     c.innerHTML=posts.map((p,i)=>{
       const u=um[p.uid]||{name:'?'};
       const dom=domCat(p.cats);
       const isMe=CU&&p.uid===CU.uid;
-      return `<div class="r-card${isMe?' is-me':''}" onclick="openSharePost('${p.id}')">
-        <div class="r-rank">${medals[i]||`<span class="r-rank-num">#${i+1}</span>`}</div>
+      const rankNum2 = i<3 ? `<span class="${['r-rank-1','r-rank-2','r-rank-3'][i]}">#${i+1}</span>` : `<span class="r-rank-num">#${i+1}</span>`;
+      return `<div class="r-card${isMe?' is-me':''}${i<3?' rank-top rank-'+(i+1):''}" onclick="openSharePost('${p.id}')">
+        <div class="r-rank">${rankNum2}</div>
         <div class="r-info" style="flex:1">
-          <div class="r-post-meta"><span>${esc(u.name||'?')}</span>${(u.score||0)>0 ? catPill(dom) : ''}</div>
+          <div class="r-post-meta"><span>${esc(u.name||'?')}</span></div>
           <div class="r-post-comment">"${esc((p.comment||'').slice(0,80))}${(p.comment||'').length>80?'…':''}"</div>
         </div>
         <div class="r-score">${p.score||0}<span class="r-score-label">pts</span></div>
@@ -2596,12 +2616,13 @@ async function loadDesktopAside() {
     const users = [];
     snap.forEach(d => { if((d.data().score||0)>0) users.push({id:d.id,...d.data()}); });
     if (!users.length) { container.innerHTML = '<p style="font-size:13px;color:var(--ink3)">Aucun encore.</p>'; return; }
-    const medals = ['🥇','🥈','🥉'];
+    const dRankColors = ['#FFD700','#C0C0C0','#CD7F32'];
     container.innerHTML = users.slice(0,8).map((u,i) => `
       <div class="desktop-top-user" onclick="openPubProfile('${u.id}')">
+        <div style="width:22px;text-align:center;font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:14px;color:${dRankColors[i]||'var(--ink3)'};">#${i+1}</div>
         <div class="avatar avatar-sm">${avatarHTML(u)}</div>
         <div>
-          <div class="desktop-top-user-name">${esc(u.name||'?')} ${medals[i]||''}</div>
+          <div class="desktop-top-user-name">${esc(u.name||'?')}</div>
           <div class="desktop-top-user-score">${(u.followers||[]).length} abonnés</div>
         </div>
         <div class="desktop-top-user-pts">${u.score||0}</div>
