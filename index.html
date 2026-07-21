@@ -853,11 +853,11 @@ body.light .notif-item.unread { background: rgba(37,99,235,.04); }
   <div id="page-home" class="page">
     <div id="home-top-users" class="story-scroll"></div>
     <div class="cat-tabs" id="cat-tabs">
-      <button class="cat-tab active-all" onclick="filterCat('all')">✨ Tout</button>
-      <button class="cat-tab" onclick="filterCat('funny')">🔥 Légende</button>
-      <button class="cat-tab" onclick="filterCat('smart')">🧠 200 IQ</button>
-      <button class="cat-tab" onclick="filterCat('love')">💀 TKO</button>
-      <button class="cat-tab" onclick="filterCat('biz')">🚫 Banni</button>
+      <button class="cat-tab active-all" onclick="filterCat('all')">Tout</button>
+      <button class="cat-tab" onclick="filterCat('funny')">Légende</button>
+      <button class="cat-tab" onclick="filterCat('smart')">200 IQ</button>
+      <button class="cat-tab" onclick="filterCat('love')">TKO</button>
+      <button class="cat-tab" onclick="filterCat('biz')">Banni</button>
     </div>
     <div class="posts-list" id="home-top-posts"></div>
   </div>
@@ -932,7 +932,7 @@ body.light .notif-item.unread { background: rgba(37,99,235,.04); }
         <div class="stat-item" onclick="openFollowList('own','following')"><span class="stat-num" id="own-stat-following">0</span><span class="stat-label">Abonnements</span></div>
         <div class="stat-item"><span class="stat-num" id="own-stat-score">0</span><span class="stat-label">Score</span></div>
       </div>
-      <div class="profile-style-card card">
+      <div class="profile-style-card card" id="own-style-card" style="display:none;">
         <div id="own-cat-badge"></div>
         <div class="score-bars" id="own-score-bars"></div>
       </div>
@@ -1511,13 +1511,15 @@ function renderProfile() {
   $('own-handle').textContent = '@'+((d.name||'').toLowerCase().replace(/\s+/g,''));
   if (d.bio) { $('own-bio').textContent='"'+d.bio+'"'; $('own-bio').style.display=''; }
   else $('own-bio').style.display='none';
-  $('own-stat-posts').textContent = d.postCount||0;
-  $('own-stat-followers').textContent = (d.followers||[]).length;
-  $('own-stat-following').textContent = (d.following||[]).length;
-  $('own-stat-score').textContent = d.score||0;
+  if ($('own-stat-followers')) $('own-stat-followers').textContent = (d.followers||[]).length;
+  if ($('own-stat-following')) $('own-stat-following').textContent = (d.following||[]).length;
+  if ($('own-stat-score')) $('own-stat-score').textContent = d.score||0;
   const dom = domCat(d.cats);
-  $('own-cat-badge').innerHTML = (d.score||0)>0 ? catPill(dom) : '';
-  $('own-score-bars').innerHTML = scoreBarsHTML(d.cats, d.score||0);
+  const hasScore = (d.score||0) > 0;
+  $('own-cat-badge').innerHTML = hasScore ? catPill(dom) : '';
+  $('own-score-bars').innerHTML = hasScore ? scoreBarsHTML(d.cats, d.score||0) : '';
+  const styleCard = $('own-style-card');
+  if (styleCard) styleCard.style.display = hasScore ? '' : 'none';
   $('topbar-avatar').innerHTML = avatarHTML(d);
   loadOwnRank();
 }
