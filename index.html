@@ -121,14 +121,14 @@ body.light .topbar-logo-light { display: block; }
 }
 .story-avatar { width: 65px; height: 65px; border-radius: 50%; background: var(--card2); border: 2.5px solid var(--bg); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 20px; color: var(--ink); overflow: hidden; font-family: 'Space Grotesk', sans-serif; }
 .story-name { font-size: 11px; font-weight: 600; color: var(--ink2); max-width: 70px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.cat-tabs { display: flex; gap: 8px; padding: 4px 16px 12px; overflow-x: auto; scrollbar-width: none; }
-.cat-tabs::-webkit-scrollbar { display: none; }
+.cat-tabs { display: flex; gap: 6px; padding: 8px 16px 10px; overflow-x: visible; }
 .cat-tab {
-  display: inline-flex; align-items: center; gap: 5px;
-  padding: 8px 16px; border-radius: 20px; border: 1.5px solid var(--border);
-  background: none; cursor: pointer; font-size: 13px; font-weight: 700;
+  display: inline-flex; align-items: center;
+  padding: 5px 10px; border-radius: 20px; border: 1.5px solid var(--border);
+  background: none; cursor: pointer; font-size: 11px; font-weight: 700;
   font-family: 'Inter', sans-serif; color: var(--ink2); white-space: nowrap;
-  transition: all .15s; flex-shrink: 0; letter-spacing: .1px;
+  transition: all .15s; flex: 1; text-align: center; justify-content: center;
+  letter-spacing: .1px; min-width: 0;
 }
 .cat-tab.active-funny { border-color: var(--funny); color: var(--funny); background: rgba(245,245,0,.1); }
 .cat-tab.active-smart { border-color: var(--smart); color: var(--smart); background: rgba(0,212,255,.1); }
@@ -1893,9 +1893,27 @@ async function hydrateThumb(container, posts) {
 
 /* ── PARTAGE ── */
 window.sharePost = function(pid) {
-  const url=`${location.origin}${location.pathname}#post/${pid}`;
-  if (navigator.share) navigator.share({title:'Punchline',url}).catch(()=>{});
-  else navigator.clipboard.writeText(url).then(()=>toast('Lien copié !'));
+  const url = location.origin + '/#post/' + pid;
+  if (navigator.share) {
+    // API native — ouvre le menu de partage système (WhatsApp, Instagram, etc.)
+    navigator.share({
+      title: 'myPunchline',
+      text: 'Regarde cette punchline 🔥',
+      url: url
+    }).catch(() => {
+      navigator.clipboard.writeText(url).then(() => toast('Lien copié !'));
+    });
+  } else {
+    // Fallback : copier le lien
+    navigator.clipboard.writeText(url).then(() => toast('Lien copié !')).catch(() => {
+      // Dernier recours : sélection manuelle
+      const inp = document.createElement('input');
+      inp.value = url; document.body.appendChild(inp);
+      inp.select(); document.execCommand('copy');
+      document.body.removeChild(inp);
+      toast('Lien copié !');
+    });
+  }
 };
 window.shareProfile = function() {
   if (!CU) return;
@@ -2318,8 +2336,15 @@ window.toggleFav = async function(pid, btn) {
   const isFav = favs.includes(pid);
   try {
     if (isFav) {
+      // Retirer UNIQUEMENT de la liste des favoris — le post original n'est PAS supprimé
       await updateDoc(uRef, { favs: arrayRemove(pid) });
       if (CUD) CUD.favs = (CUD.favs||[]).filter(id => id !== pid);
+      // Si on est dans l'onglet favs, retirer la card du DOM
+      const card = document.getElementById('pc-' + pid);
+      if (card && $('own-favs') && !$('own-favs').style.display.includes('none')) {
+        card.style.opacity = '0'; card.style.transition = 'opacity .3s';
+        setTimeout(() => card.remove(), 300);
+      }
     } else {
       await updateDoc(uRef, { favs: arrayUnion(pid) });
       if (CUD) CUD.favs = [...(CUD.favs||[]), pid];
@@ -2329,8 +2354,7 @@ window.toggleFav = async function(pid, btn) {
       btn.classList.toggle('saved', !isFav);
       const svg = btn.querySelector('svg');
       if (svg) svg.setAttribute('fill', isFav ? 'none' : 'currentColor');
-      const txt = btn.lastChild;
-      if (txt && txt.nodeType === 3) txt.textContent = isFav ? ' Favoris' : ' Préférée';
+      btn.querySelector('span') && (btn.querySelector('span').textContent = isFav ? 'Favoris' : 'Préférée');
     }
     toast(isFav ? 'Retiré des favoris.' : '⭐ Ajouté aux préférées !');
   } catch(e) { toast('Erreur : ' + e.message); }
@@ -2342,8 +2366,9 @@ window.switchProfileTab = function(tab) {
   profileTab = tab;
   $('own-tab-posts').classList.toggle('active', tab==='posts');
   $('own-tab-favs').classList.toggle('active', tab==='favs');
-  $('own-posts').style.display = tab==='posts' ? '' : 'none';
-  $('own-favs').style.display = tab==='favs' ? '' : 'none';
+  $('own-posts').style.display = tab==='posts' ? 'block' : 'none';
+  $('own-favs').style.display = tab==='favs' ? 'block' : 'none';
+  if (tab==='posts') loadOwnPosts();
   if (tab==='favs') loadFavs();
 };
 
