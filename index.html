@@ -956,7 +956,8 @@ body.light .notif-item.unread { background: rgba(37,99,235,.04); }
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
       Retour
     </button>
-    <div class="profile-header">
+    <div class="profile-header" style="position:relative;">
+      <div class="rank-badge"><div class="rank-badge-num" id="pub-rank">#—</div><div class="rank-badge-label">Classement</div></div>
       <div class="profile-top">
         <div class="avatar avatar-lg" id="pub-avatar">?</div>
         <div class="profile-meta">
@@ -1583,6 +1584,18 @@ window.openPubProfile = async function(uid) {
   $('pub-stat-posts').textContent = u.postCount||0;
   $('pub-stat-followers').textContent = (u.followers||[]).length;
   $('pub-stat-score').textContent = u.score||0;
+  // Calculer le rang dans le classement
+  try {
+    const rankSnap = await getDocs(query(collection(db,'users'), orderBy('score','desc')));
+    let rank = 1;
+    let found = false;
+    rankSnap.forEach(d => {
+      if (found) return;
+      if (d.id === uid) { found = true; return; }
+      if ((d.data().score||0) > 0) rank++;
+    });
+    $('pub-rank').textContent = (u.score||0) > 0 ? '#' + rank : '#—';
+  } catch { $('pub-rank').textContent = '#—'; }
   const dom = domCat(u.cats);
   $('pub-cat-badge').innerHTML = (u.score||0)>0 ? catPill(dom) : '';
   $('pub-score-bars').innerHTML = scoreBarsHTML(u.cats, u.score||0);
@@ -2321,7 +2334,7 @@ window.openNotifications = async function() {
 
 function renderNotifs(el, notifs, um={}) {
   if (!notifs.length) { el.innerHTML='<div class="empty" style="padding:20px 0"><p>Aucune notification.</p></div>'; return; }
-  el.innerHTML=notifs.map(n=>{
+  el.innerHTML=notifs.slice(0,3).map(n=>{
     const u=um[n.fromUid]||{name:'?'};
     return `<div class="notif-item${n.read?'':' unread'}" onclick="document.getElementById('notif-modal').classList.remove('open');openPubProfile('${n.fromUid}')">
       <div class="avatar avatar-sm">${avatarHTML(u)}</div>
