@@ -2205,7 +2205,7 @@ async function renderHomePosts(posts) {
       ${hdate?`<div class="post-date">${hdate}</div>`:''}
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;cursor:pointer;" onclick="openPubProfile('${p.uid}')">
         <div class="avatar avatar-sm">${avatarHTML(u)}</div>
-        <div><span style="font-weight:700;font-size:13px">${esc(u.name||'?')}</span> ${(u.score||0)>0?catPill(dom):''}</div>
+        <div><span style="font-weight:700;font-size:13px">${esc(u.name||'?')}</span></div>
       </div>
       <div class="post-score-wrap"><div class="post-score-num" id="hsc-${p.id}">${p.score||0}</div><div class="post-score-label">points</div></div>
       <div class="post-comment">"${esc(p.comment||'')}"</div>
