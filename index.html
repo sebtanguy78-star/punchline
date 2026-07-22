@@ -960,7 +960,7 @@ body.light .notif-item.unread { background: rgba(37,99,235,.04); }
         <div class="stat-item" onclick="openFollowList('own','following')"><span class="stat-num" id="own-stat-following">0</span><span class="stat-label">Abonnements</span></div>
         <div class="stat-item"><span class="stat-num" id="own-stat-score">0</span><span class="stat-label">Score</span></div>
       </div>
-      <div class="profile-style-card card" id="own-style-card" style="display:none;">
+      <div class="profile-style-card card" id="own-style-card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
           <div id="own-cat-badge"></div>
           <button onclick="openInfoPopup()" style="background:none;border:1px solid var(--border);border-radius:50%;width:22px;height:22px;font-size:11px;font-weight:700;color:var(--ink3);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">i</button>
@@ -1133,7 +1133,10 @@ body.light .notif-item.unread { background: rgba(37,99,235,.04); }
 
     <!-- À propos -->
     <div style="background:var(--card2);border-radius:10px;padding:14px;margin-bottom:14px;">
-      <div style="font-size:13px;font-weight:700;margin-bottom:6px;">✨ myPunchline</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <div style="font-size:13px;font-weight:700;">✨ myPunchline</div>
+        <button onclick="openInfoPopup()" style="background:none;border:1px solid var(--border);border-radius:50%;width:22px;height:22px;font-size:11px;font-weight:700;color:var(--ink3);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">i</button>
+      </div>
       <p style="font-size:12px;color:var(--ink2);line-height:1.7;">Mets en lumière les meilleurs commentaires sur les vidéos de tes réseaux préférés. Vote pour un style, grimpe dans le classement et deviens un punchlineur légendaire.</p>
     </div>
 
@@ -1195,7 +1198,7 @@ body.light .notif-item.unread { background: rgba(37,99,235,.04); }
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--card2);border-radius:10px;">
         <span style="font-weight:700;">🚫 Banni</span>
-        <span style="font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:18px;color:var(--ink3);">0 pt</span>
+        <span style="font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:18px;color:var(--danger);">-1 pt</span>
       </div>
     </div>
     <p style="font-size:12px;color:var(--ink3);line-height:1.7;margin-bottom:14px;">Un seul vote par personne par post. Changer de catégorie ne rapporte pas de point supplémentaire.</p>
@@ -1624,9 +1627,9 @@ function renderProfile() {
   const dom = domCat(d.cats);
   const hasScore = (d.score||0) > 0;
   $('own-cat-badge').innerHTML = hasScore ? catPill(dom) : '';
-  $('own-score-bars').innerHTML = hasScore ? scoreBarsHTML(d.cats, d.score||0) : '';
+  $('own-score-bars').innerHTML = scoreBarsHTML(d.cats, d.score||0);
   const styleCard = $('own-style-card');
-  if (styleCard) styleCard.style.display = hasScore ? '' : 'none';
+  if (styleCard) styleCard.style.display = '';
   loadOwnRank();
 }
 
@@ -1793,10 +1796,10 @@ function postCardHTML(p, isOwn) {
     ${thumbHTML}
     <div class="cat-vote-row">${catBtns}</div>
     <div class="post-actions">
-      <button class="like-btn${liked?' liked':''}" data-like="${p.id}" data-owner="${p.uid}" ${isOwn?'disabled':''}>
-        <svg viewBox="0 0 14 14" fill="${liked?'currentColor':'none'}" stroke="currentColor" stroke-width="1.5"><path d="M7 12S1.5 8.3 1.5 4.7a3 3 0 0 1 5.5-1.6 3 3 0 0 1 5.5 1.6C12.5 8.3 7 12 7 12z"/></svg>
-        <span id="lk-${p.id}">${p.likes||0}</span>
-      </button>
+      ${!isOwn ? `<button class="fav-btn${isFav?' saved':''}" data-fav="${p.id}">
+        <svg viewBox="0 0 24 24" fill="${isFav?'currentColor':'none'}" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <span>${isFav?'Préférée':'Favoris'}</span>
+      </button>` : ''}
       <button class="btn btn-ghost btn-sm" data-share="${p.id}">Partager</button>
       ${deleteBtn}
     </div>
@@ -1889,14 +1892,15 @@ async function voteCat(pid, cat, ownerUid, clickedBtn) {
   const up = {}, uup = {};
 
   if (prev===cat) {
-    const removePts = cat==='funny' ? 2 : cat==='biz' ? 0 : 1;
+    const removePts = cat==='funny' ? 2 : cat==='biz' ? -1 : 1;
     up[`cats.${cat}`]=increment(-1); up[`catVotes.${CU.uid}`]=deleteField();
-    if (!liked && removePts > 0) { up.score=increment(-removePts); uup.score=increment(-removePts); }
+    // Retirer le vote : inverser l'effet (Banni retiré = +1pt rendu)
+    up.score=increment(-removePts); uup.score=increment(-removePts);
     uup[`cats.${cat}`]=increment(-1);
     toast('Vote retiré.');
   } else {
-    const catPoints = cat==='funny' ? 2 : cat==='biz' ? 0 : 1;
-    const prevPoints = prev ? (prev==='funny' ? 2 : prev==='biz' ? 0 : 1) : 0;
+    const catPoints = cat==='funny' ? 2 : cat==='biz' ? -1 : 1;
+    const prevPoints = prev ? (prev==='funny' ? 2 : prev==='biz' ? -1 : 1) : 0;
     if (prev) { up[`cats.${prev}`]=increment(-1); uup[`cats.${prev}`]=increment(-1); }
     up[`cats.${cat}`]=increment(1); up[`catVotes.${CU.uid}`]=cat;
     uup[`cats.${cat}`]=increment(1);
@@ -2126,6 +2130,10 @@ window.openSharePost = async function(pid) {
   ${thumbHTML}
   <div class="cat-vote-row" id="s-catvote">${catBtns}</div>
   <div class="post-actions" style="margin-top:14px">
+    ${!isOwn ? `<button class="fav-btn${(CUD?.favs||[]).includes(pid)?' saved':''}" id="share-fav-btn" onclick="toggleFav('${pid}',this)">
+      <svg viewBox="0 0 24 24" fill="${(CUD?.favs||[]).includes(pid)?'currentColor':'none'}" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      <span>${(CUD?.favs||[]).includes(pid)?'Préférée':'Favoris'}</span>
+    </button>` : ''}
     <button class="btn btn-ghost btn-sm" onclick="sharePost('${pid}')">Partager</button>
     <button class="btn btn-ghost btn-sm" onclick="openPubProfile('${p.uid}')">Voir le profil</button>
   </div>`;
@@ -2232,10 +2240,10 @@ async function renderHomePosts(posts) {
       ${thumbHTML}
       <div class="cat-vote-row">${catBtns}</div>
       <div class="post-actions">
-        <button class="fav-btn" data-fav="${p.id}" onclick="toggleFav('${p.id}',this)">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-          Favoris
-        </button>
+        ${!isOwn ? `<button class="fav-btn${(CUD?.favs||[]).includes(p.id)?' saved':''}" data-fav="${p.id}">
+          <svg viewBox="0 0 24 24" fill="${(CUD?.favs||[]).includes(p.id)?'currentColor':'none'}" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <span>${(CUD?.favs||[]).includes(p.id)?'Préférée':'Favoris'}</span>
+        </button>` : ''}
         <button class="btn btn-ghost btn-sm" onclick="sharePost('${p.id}')">Partager</button>
         <button class="btn btn-ghost btn-sm" onclick="openSharePost('${p.id}')">Voir</button>
       </div>
@@ -2243,6 +2251,7 @@ async function renderHomePosts(posts) {
   }).join('');
   pc.querySelectorAll('[data-like]').forEach(btn=>btn.addEventListener('click',()=>toggleLike(btn.dataset.like,btn.dataset.owner,btn)));
   pc.querySelectorAll('[data-cat]').forEach(btn=>btn.addEventListener('click',()=>{ catCache={}; voteCat(btn.dataset.pid,btn.dataset.cat,btn.dataset.owner,btn); }));
+  pc.querySelectorAll('[data-fav]').forEach(btn=>btn.addEventListener('click',()=>toggleFav(btn.dataset.fav,btn)));
   hydrateThumb(pc, posts);
 }
 
@@ -2534,7 +2543,14 @@ async function loadFavs() {
     const snaps = await Promise.all(favIds.map(id => getDoc(doc(db,'posts',id))));
     const posts = snaps.filter(s=>s.exists()).map(s=>({id:s.id,...s.data()}));
     if (!posts.length) { c.innerHTML='<div class="empty"><p>Aucune préférée.</p></div>'; return; }
-    c.innerHTML = posts.map(p => postCardHTML(p, CU&&p.uid===CU.uid)).join('');
+    c.innerHTML = posts.map(p => {
+      const card = postCardHTML(p, false); // false = jamais isOwn dans les favoris
+      // Remplacer le bouton "Favoris" par "Retirer" dans l'onglet favoris
+      return card.replace(
+        `<span>${'Préférée'}</span>`,
+        `<span>Retirer</span>`
+      );
+    }).join('');
     bindPostEvents(c, posts, false);
     hydrateThumb(c, posts);
   } catch(e) { c.innerHTML='<div class="empty"><p>Erreur.</p></div>'; }
