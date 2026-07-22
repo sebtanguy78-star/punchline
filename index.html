@@ -1988,7 +1988,7 @@ async function fetchThumb(url) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 5000);
     const r = await fetch(
-      `/.netlify/functions/oembed?url=${encodeURIComponent(url)}`,
+      `/functions/oembed?url=${encodeURIComponent(url)}`,
       { signal: controller.signal }
     );
     clearTimeout(timeout);
