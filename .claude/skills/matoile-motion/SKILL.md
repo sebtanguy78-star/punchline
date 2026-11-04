@@ -70,7 +70,13 @@ chiffre ou lieu prononcé, une chip qui pop **au moment exact du mot** (prends l
   « ajoutez-moi / n'hésitez pas » avec `t_click` sur le mot « toile ». `END_AT` juste après le dernier mot.
 - `BUMPS` : 4-5 mots forts. `HIDE_CAPS` : pendant un gros titre (`.tape`).
 - `PROFILE` : prénom, lieu (« Ville · Île Maurice »), `avatar_t` + `avatar_crop` (`w:h:x:y` carré autour du visage
-  en pixels source — vérifie l'image `$W/render/avatar.jpg`), `cap_bottom` 190.
+  en pixels source — vérifie l'image `$W/render/avatar.jpg`), `cap_bottom` 190, et **`panel_side`** :
+  `"right"` (défaut, colonne de cartes à x=1160) si le visage est à gauche/centre-gauche, `"left"` (x=70, les cartes
+  glissent depuis la gauche) si le visage est au centre ou à droite. Règle : en 1920 px de large, le bord du visage
+  sur le plan serré ne doit jamais toucher la colonne (≥ 40 px d'écart). Vidéo 2 (visage à x≈0,55) → `"left"`.
+- Source en basse définition (≤ 720 px de large) : plans serrés à ~1,15 au lieu de 1,20 pour garder du piqué.
+- Un long passage sans pause (> 6 s) peut recevoir un changement de plan sans coupe : une entrée `(t, t)` dans
+  `REMOVE` (placer `t` entre deux mots), avec un zoom différent pour le segment suivant.
 - `cards.html` / `cards.js` : copie les blocs de l'exemple et change les textes, icônes (`{{nom-lucide}}`, voir
   lucide.dev ; `{{web}}` = icône toile MaToile) et positions `top`. Chaque bloc de `renderCards` suit le même
   schéma : `slide()` pour la carte, `pop()` pour chaque chip, avec les noms d'événements de la config.
@@ -94,4 +100,6 @@ chiffre ou lieu prononcé, une chip qui pop **au moment exact du mot** (prends l
   `template/icons/web.svg` : icône toile.
 - `assets/logo_matoile.png` : logo fourni par l'utilisateur.
 - `examples/sebastien/` : config + cartes de la vidéo validée (référence de rythme et de contenu).
+- `examples/sebastien-nuit/` : 2ᵉ vidéo (de nuit, 720 px, visage au centre-droit) : cartes à gauche
+  (`panel_side`), plans serrés réduits, changement de plan sans coupe, carte « Vous avez un projet ? » à 4 chips.
 - `references/charte.md` : couleurs, typo, composants, timings, son, exports.

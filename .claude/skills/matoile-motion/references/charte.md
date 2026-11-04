@@ -24,8 +24,10 @@ Inter (fontsource, fichiers locaux) partout. Sous-titres : Inter 800, 70 px, cas
 labels Inter 700 21 px capitales espacées turquoise, chips Inter 700 33 px.
 
 ## Mise en page (1920×1080)
-- Personne cadrée à gauche/centre : tout le graphisme va dans le **panneau droit** (`left:1160px`, largeur ≤ 690 px,
-  `top` entre 150 et ~700 px). Ne jamais couvrir le visage.
+- Tout le graphisme va dans **une colonne latérale** (largeur ≤ 690 px, `top` entre 150 et ~700 px), du côté
+  opposé au visage : à droite (`left:1160px`, défaut) si la personne est à gauche/centre-gauche, à gauche
+  (`PROFILE["panel_side"] = "left"`, `left:70px`) si elle est au centre/à droite. Ne jamais couvrir le visage.
+  Les cartes et les souffles audio arrivent du côté de la colonne.
 - **Sous-titres centrés en bas à `cap_bottom` = 190 px** (112 px a été jugé trop bas). Réglable dans `PROFILE`.
 - Une seule « idée » à l'écran à la fois : la carte précédente sort quand la suivante entre.
 
