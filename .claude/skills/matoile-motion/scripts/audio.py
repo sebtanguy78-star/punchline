@@ -51,6 +51,7 @@ voice = np.pad(voice, ((0, N - len(voice)), (0, 0)))
 
 # --- synthetic SFX (quiet, short)
 rng = np.random.default_rng(7)
+PAN = -1.0 if plan["profile"].get("panel_side") == "left" else 1.0
 
 
 def db(x):
@@ -71,7 +72,7 @@ def whoosh(d=0.34, g=-31):
     x = rng.standard_normal(n)
     y = lp(lp(x, a), a) - lp(x, a * 0.15)
     y = y / (np.abs(y).max() + 1e-9) * env
-    pan = np.linspace(0.35, -0.35, n)  # sweeps right -> left like the cards
+    pan = np.linspace(0.35, -0.35, n) * PAN  # sweeps from the cards' side, like the cards
     return np.stack([y * (1 - pan), y * (1 + pan)], 1) * db(g)
 
 

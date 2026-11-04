@@ -12,7 +12,10 @@ prof = plan["profile"]
 html = (SK / "template/overlay.src.html").read_text()
 html = html.replace("{{CARDS_HTML}}", (cards / "cards.html").read_text())
 for k, v in {"NAME": prof["name"], "PLACE": prof["place"], "CTA_CHIP": prof.get("cta_chip", "Au plaisir de discuter !"),
-             "CAP_BOTTOM": str(prof.get("cap_bottom", 190))}.items():
+             "CAP_BOTTOM": str(prof.get("cap_bottom", 190)),
+             # card column: right (x=1160) when the person is framed left/centre-left, left (x=70) when the face
+             # sits centre/right -- the cards must never cover the face, even on the tight (zoomed) shots
+             "PANEL_LEFT": str(prof.get("panel_left", 70 if prof.get("panel_side") == "left" else 1160))}.items():
     html = html.replace("{{%s}}" % k, v)
 
 

@@ -32,7 +32,7 @@ body{font-family:I,'Noto Color Emoji',sans-serif;color:#fff;position:relative}
 #cap .w.k{color:var(--gold)}
 
 /* ---------- right panel ---------- */
-.panel{position:absolute;left:1160px;top:0;width:690px}
+.panel{position:absolute;left:{{PANEL_LEFT}}px;top:0;width:690px}
 .card{position:absolute;left:0;background:var(--card);border:1.5px solid rgba(79,201,194,.22);border-radius:28px;
   padding:26px 34px 28px 28px;box-shadow:0 26px 60px rgba(0,0,0,.35);display:flex;gap:22px;align-items:center;max-width:690px}
 .card .bar{position:absolute;left:-1px;top:22px;bottom:22px;width:7px;border-radius:0 6px 6px 0;background:var(--gold);transform-origin:top}
@@ -160,6 +160,8 @@ body{font-family:I,'Noto Color Emoji',sans-serif;color:#fff;position:relative}
 <script src="../plan.js"></script>
 <script>
 const P = window.PLAN, E = P.events, W = P.words;
+// cards come in from the side they live on (panel_side 'right' = default, 'left' when the face is centre/right)
+const DIR = (P.profile.panel_side || 'right') === 'left' ? -1 : 1;
 const $ = id => document.getElementById(id);
 const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
 const pr = (t, t0, d) => clamp((t - t0) / d);
@@ -170,7 +172,7 @@ const eBack = (x, s = 1.9) => 1 + (s + 1) * Math.pow(x - 1, 3) + s * Math.pow(x 
 function vis(el, v) { el.style.opacity = v; el.classList.toggle('hide', v <= 0.001); }
 
 function slide(el, t, tin, tout, o = {}) {
-  const dx = o.dx ?? 90, din = o.din ?? .42, dout = o.dout ?? .28;
+  const dx = (o.dx ?? 90) * DIR, din = o.din ?? .42, dout = o.dout ?? .28;
   const a = eOut(pr(t, tin, din)), b = eIn(pr(t, tout, dout));
   vis(el, Math.min(1, a * 1.4) * (1 - b));
   el.style.transform = `translateX(${(1 - a) * dx + b * dx * .7}px)`;
@@ -181,12 +183,12 @@ function slide(el, t, tin, tout, o = {}) {
 function pop(el, t, t0, tout, o = {}) {
   const x = pr(t, t0, o.d ?? .36), b = eIn(pr(t, tout, .26));
   vis(el, clamp(x * 4) * (1 - b));
-  el.style.transform = `translateX(${b * 60}px) scale(${.4 + .6 * eBack(x)})`;
+  el.style.transform = `translateX(${b * 60 * DIR}px) scale(${.4 + .6 * eBack(x)})`;
 }
 function slam(el, t, t0, tout, rot) {
   const x = pr(t, t0, .22), b = eIn(pr(t, tout, .26));
   vis(el, clamp(x * 3) * (1 - b));
-  el.style.transform = `translateX(${b * 70}px) rotate(${rot}deg) scale(${1 + .9 * (1 - eOut(x))})`;
+  el.style.transform = `translateX(${b * 70 * DIR}px) rotate(${rot}deg) scale(${1 + .9 * (1 - eOut(x))})`;
 }
 
 let capKey = -1;
