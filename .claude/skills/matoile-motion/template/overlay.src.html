@@ -1,0 +1,346 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+@font-face{font-family:I;font-weight:500;src:url(node_modules/@fontsource/inter/files/inter-latin-500-normal.woff2)}
+@font-face{font-family:I;font-weight:600;src:url(node_modules/@fontsource/inter/files/inter-latin-600-normal.woff2)}
+@font-face{font-family:I;font-weight:700;src:url(node_modules/@fontsource/inter/files/inter-latin-700-normal.woff2)}
+@font-face{font-family:I;font-weight:800;src:url(node_modules/@fontsource/inter/files/inter-latin-800-normal.woff2)}
+@font-face{font-family:I;font-weight:900;src:url(node_modules/@fontsource/inter/files/inter-latin-900-normal.woff2)}
+/* MaToile palette, sampled from the logo + app screenshot */
+:root{--bg:#0E1A1D;--bg2:#163236;--node:#1B2E34;--teal:#4FC9C2;--gold:#E2B65C;
+  --red:#EA2839;--blue:#1A206D;--yel:#FFD500;--grn:#00A551;--card:rgba(14,26,29,.93);--muted:#B7C6C7}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1920px;height:1080px;background:transparent;overflow:hidden}
+body{font-family:I,'Noto Color Emoji',sans-serif;color:#fff;position:relative}
+.emo{font-family:'Noto Color Emoji';font-weight:400}
+.abs{position:absolute}
+.hide{visibility:hidden}
+
+/* Mauritius flag bits */
+.flag{display:inline-flex;flex-direction:column;width:34px;height:24px;border-radius:4px;overflow:hidden;vertical-align:-3px;margin-right:10px;
+  box-shadow:0 0 0 1.5px rgba(255,255,255,.15)}
+.flag i{flex:1}.flag i:nth-child(1){background:var(--red)}.flag i:nth-child(2){background:var(--blue)}
+.flag i:nth-child(3){background:var(--yel)}.flag i:nth-child(4){background:var(--grn)}
+.stripes{display:flex;gap:0;height:10px;transform:skewX(-35deg);transform-origin:left}
+.stripes i{width:25%;height:100%}.stripes i:nth-child(1){background:var(--red)}.stripes i:nth-child(2){background:var(--blue)}
+.stripes i:nth-child(3){background:var(--yel)}.stripes i:nth-child(4){background:var(--grn)}
+
+/* ---------- captions ---------- */
+#cap{position:absolute;left:0;right:0;bottom:{{CAP_BOTTOM}}px;text-align:center;font-weight:800;font-size:70px;line-height:1;letter-spacing:-.01em}
+#cap .w{display:inline-block;margin:0 .12em;color:#fff;paint-order:stroke fill;-webkit-text-stroke:13px var(--bg);
+  text-shadow:0 7px 0 var(--bg),0 12px 28px rgba(0,0,0,.5)}
+#cap .w.k{color:var(--gold)}
+
+/* ---------- right panel ---------- */
+.panel{position:absolute;left:1160px;top:0;width:690px}
+.card{position:absolute;left:0;background:var(--card);border:1.5px solid rgba(79,201,194,.22);border-radius:28px;
+  padding:26px 34px 28px 28px;box-shadow:0 26px 60px rgba(0,0,0,.35);display:flex;gap:22px;align-items:center;max-width:690px}
+.card .bar{position:absolute;left:-1px;top:22px;bottom:22px;width:7px;border-radius:0 6px 6px 0;background:var(--gold);transform-origin:top}
+.ib{flex:none;width:78px;height:78px;border-radius:50%;background:var(--node);border:3.5px solid var(--gold);display:grid;place-items:center;color:var(--teal)}
+.ib svg{width:38px;height:38px;stroke-width:2.3}
+.lab{font-weight:700;font-size:21px;letter-spacing:.2em;text-transform:uppercase;color:var(--teal);margin-bottom:7px}
+.ttl{font-weight:800;font-size:45px;line-height:1.08;letter-spacing:-.015em}
+.sub{font-weight:500;font-size:27px;color:var(--muted);margin-top:7px}
+.chip{position:absolute;left:0;display:inline-flex;align-items:center;gap:13px;background:var(--card);color:#fff;border:3px solid var(--gold);
+  font-weight:700;font-size:33px;letter-spacing:-.01em;padding:12px 28px 12px 20px;border-radius:999px;white-space:nowrap;
+  box-shadow:0 16px 36px rgba(0,0,0,.3);transform-origin:left center}
+.chip svg{width:34px;height:34px;stroke-width:2.4;color:var(--gold)}
+.tag{position:absolute;left:0;display:inline-block;background:var(--card);color:#fff;font-weight:700;font-size:23px;
+  letter-spacing:.17em;text-transform:uppercase;padding:14px 22px;border-radius:14px;box-shadow:0 16px 36px rgba(0,0,0,.3);
+  border:1.5px solid rgba(79,201,194,.22)}
+.tag b{color:var(--gold);font-weight:800}
+
+#loc .sub{display:flex;align-items:center}
+#loc .sub .flag{vertical-align:0}
+#name .nm{font-weight:900;font-size:88px;line-height:1;letter-spacing:-.025em;overflow:hidden;padding-bottom:6px}
+#name .nm span{display:inline-block}
+#name .ul{height:9px;border-radius:5px;background:var(--gold);margin-top:12px;transform-origin:left;width:100%}
+
+.row{display:flex;align-items:center;gap:16px;font-weight:700;font-size:34px;margin-top:16px;letter-spacing:-.01em}
+.ck{flex:none;width:48px;height:48px;border-radius:50%;background:var(--node);border:3px solid var(--gold);display:grid;place-items:center;color:var(--gold)}
+.ck svg{width:28px;height:28px;stroke-width:3.4}
+.ck path{stroke-dasharray:30;stroke-dashoffset:30}
+
+.tape{position:absolute;left:0;font-weight:900;font-size:124px;line-height:1;letter-spacing:-.02em;padding:10px 30px 14px;border-radius:16px;
+  background:var(--bg);color:#fff;box-shadow:0 22px 50px rgba(0,0,0,.35);transform-origin:center;border:2px solid rgba(79,201,194,.25)}
+.tape.y{background:var(--gold);color:var(--bg);border-color:var(--gold)}
+
+#rec .cn{position:absolute;width:96px;height:96px;border:7px solid #fff;filter:drop-shadow(0 2px 6px rgba(0,0,0,.45))}
+#rec .tl{left:56px;top:56px;border-right:none;border-bottom:none;border-radius:18px 0 0 0}
+#rec .tr{right:56px;top:56px;border-left:none;border-bottom:none;border-radius:0 18px 0 0}
+#rec .bl{left:56px;bottom:56px;border-right:none;border-top:none;border-radius:0 0 0 18px}
+#rec .br{right:56px;bottom:56px;border-left:none;border-top:none;border-radius:0 0 18px 0}
+#rec .lbl{position:absolute;top:86px;left:96px;font-weight:800;font-size:34px;letter-spacing:.08em;display:flex;align-items:center;gap:14px;
+  text-shadow:0 2px 10px rgba(0,0,0,.6)}
+#rec .dot{width:26px;height:26px;border-radius:50%;background:var(--red);box-shadow:0 0 18px rgba(234,40,57,.8)}
+#rec .tc{position:absolute;top:86px;right:96px;font-weight:700;font-size:34px;letter-spacing:.04em;font-variant-numeric:tabular-nums;
+  text-shadow:0 2px 10px rgba(0,0,0,.6)}
+
+/* MaToile card */
+#mt .logo{flex:none;width:118px;height:118px;border-radius:28px;background:url(logo_matoile.png) center/cover;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+#mt .ttl{font-size:62px;font-weight:900;letter-spacing:-.03em}
+#mt .stripes{width:220px;margin-top:12px}
+
+/* cta */
+#cta .card{flex-direction:column;align-items:stretch;gap:24px;padding:30px 32px 32px}
+.prof{display:flex;align-items:center;gap:22px}
+.av{flex:none;width:100px;height:100px;border-radius:50%;background:url(avatar.jpg) center/cover;border:4px solid var(--gold);
+  box-shadow:0 0 0 7px rgba(226,182,92,.18)}
+.btn{position:relative;overflow:hidden;background:var(--gold);color:var(--bg);border-radius:18px;height:86px;
+  font-weight:800;font-size:33px;letter-spacing:-.01em}
+.btn svg{width:40px;height:40px;stroke-width:2.2}
+.btn .st{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:14px}
+#cursor{position:absolute;width:70px;height:70px}
+#cursor svg{width:70px;height:70px;fill:#fff;stroke:var(--bg);stroke-width:1.6;filter:drop-shadow(0 6px 10px rgba(0,0,0,.4))}
+#ripple{position:absolute;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;border:5px solid var(--gold)}
+
+/* ---------- end ---------- */
+#wipe{position:absolute;inset:0}
+#end{position:absolute;inset:0;background:radial-gradient(circle at 600px 540px,var(--bg2) 0,#11262A 420px,var(--bg) 1000px)}
+#web{position:absolute;inset:0}
+#end .lg{position:absolute;left:440px;top:380px;width:320px;height:320px;border-radius:72px;background:url(logo_matoile.png) center/cover;
+  box-shadow:0 40px 90px rgba(0,0,0,.55),0 0 0 2px rgba(79,201,194,.25)}
+#end .txt{position:absolute;left:1000px;top:0;bottom:0;display:flex;flex-direction:column;justify-content:center}
+#end .lab{font-size:28px;margin-bottom:6px}
+#end .big{font-weight:900;font-size:168px;line-height:1;letter-spacing:-.045em;overflow:hidden;padding:4px 0 14px}
+#end .big span{display:inline-block}
+#end .stripes{width:420px;height:13px;margin:6px 0 34px 6px}
+#end .who{display:flex;align-items:center;gap:20px;font-weight:600;font-size:36px;color:#fff}
+#end .who .av{width:76px;height:76px;border-width:3.5px;box-shadow:none}
+#end .who small{display:block;font-size:27px;font-weight:500;color:var(--muted);margin-top:4px}
+#end .pill{margin-top:34px;align-self:flex-start;display:inline-flex;align-items:center;gap:14px;background:var(--gold);color:var(--bg);
+  font-weight:800;font-size:36px;letter-spacing:-.01em;padding:18px 38px 18px 26px;border-radius:999px;box-shadow:0 18px 40px rgba(0,0,0,.35)}
+#end .pill svg{width:44px;height:44px;stroke-width:2.2}
+#black{position:absolute;inset:0;background:#000}
+</style></head>
+<body>
+
+<div id="rec" class="abs hide" style="inset:0">
+  <div class="cn tl"></div><div class="cn tr"></div><div class="cn bl"></div><div class="cn br"></div>
+  <div class="lbl"><div class="dot"></div>REC</div>
+  <div class="tc">00:00:00:00</div>
+</div>
+
+<div class="panel">
+{{CARDS_HTML}}
+
+  <div id="cta" class="hide" style="position:absolute;top:190px;left:0;width:620px">
+    <div class="card" style="position:relative;width:620px">
+      <div class="prof">
+        <div class="av"></div>
+        <div><div class="ttl" style="font-size:44px">{{NAME}}</div><div class="sub" style="font-size:25px;margin-top:3px">{{PLACE}}</div></div>
+      </div>
+      <div class="btn" id="btn">
+        <div class="st off">{{web}}Ajouter à ma toile</div>
+        <div class="st on">{{check}}Ajouté à ma toile</div>
+      </div>
+    </div>
+    <div id="ripple" class="hide"></div>
+    <div id="cursor" class="hide">{{mouse-pointer-2}}</div>
+  </div>
+  <div id="ctachip" class="chip hide" style="top:560px">{{message-circle}}{{CTA_CHIP}}</div>
+</div>
+
+<div id="cap"></div>
+
+<div id="end" class="hide">
+  <svg id="web" viewBox="0 0 1920 1080"></svg>
+  <div class="lg"></div>
+  <div class="txt">
+    <div class="lab">Retrouvez-moi sur</div>
+    <div class="big"><span>MaToile</span></div>
+    <div class="stripes"><i></i><i></i><i></i><i></i></div>
+    <div class="who"><div class="av"></div><div>{{NAME}}<small>{{PLACE}}</small></div></div>
+    <div class="pill">{{web}}Ajoutez-moi à votre toile</div>
+  </div>
+</div>
+<svg id="wipe" class="hide" viewBox="0 0 1920 1080"><polygon/><polygon/><polygon/><polygon/></svg>
+<div id="black" class="hide"></div>
+
+<script src="../plan.js"></script>
+<script>
+const P = window.PLAN, E = P.events, W = P.words;
+const $ = id => document.getElementById(id);
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const pr = (t, t0, d) => clamp((t - t0) / d);
+const eOut = x => 1 - Math.pow(1 - x, 3);
+const eIn = x => x * x * x;
+const eIO = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+const eBack = (x, s = 1.9) => 1 + (s + 1) * Math.pow(x - 1, 3) + s * Math.pow(x - 1, 2);
+function vis(el, v) { el.style.opacity = v; el.classList.toggle('hide', v <= 0.001); }
+
+function slide(el, t, tin, tout, o = {}) {
+  const dx = o.dx ?? 90, din = o.din ?? .42, dout = o.dout ?? .28;
+  const a = eOut(pr(t, tin, din)), b = eIn(pr(t, tout, dout));
+  vis(el, Math.min(1, a * 1.4) * (1 - b));
+  el.style.transform = `translateX(${(1 - a) * dx + b * dx * .7}px)`;
+  const bar = el.querySelector(':scope > .bar');
+  if (bar) bar.style.transform = `scaleY(${eOut(pr(t, tin + .15, .4))})`;
+  return a * (1 - b);
+}
+function pop(el, t, t0, tout, o = {}) {
+  const x = pr(t, t0, o.d ?? .36), b = eIn(pr(t, tout, .26));
+  vis(el, clamp(x * 4) * (1 - b));
+  el.style.transform = `translateX(${b * 60}px) scale(${.4 + .6 * eBack(x)})`;
+}
+function slam(el, t, t0, tout, rot) {
+  const x = pr(t, t0, .22), b = eIn(pr(t, tout, .26));
+  vis(el, clamp(x * 3) * (1 - b));
+  el.style.transform = `translateX(${b * 70}px) rotate(${rot}deg) scale(${1 + .9 * (1 - eOut(x))})`;
+}
+
+let capKey = -1;
+function caps(t) {
+  const box = $('cap');
+  const hidden = E.hide_caps.some(([a, b]) => t >= a && t < b);
+  const ci = hidden ? -1 : P.caps.findIndex(c => t >= c.s && t < c.e);
+  if (ci !== capKey) {
+    capKey = ci;
+    box.innerHTML = ci < 0 ? '' : P.caps[ci].w.map(i =>
+      `<span class="w${W[i].key ? ' k' : ''}" data-t="${W[i].os}">${W[i].w}</span>`).join('');
+  }
+  if (ci < 0) return;
+  const c = P.caps[ci];
+  box.querySelectorAll('.w').forEach(sp => {
+    const x = pr(t, Math.max(+sp.dataset.t - .03, c.s), .17);
+    sp.style.opacity = clamp(x * 3);
+    sp.style.transform = `translateY(${(1 - eOut(x)) * 22}px) scale(${.7 + .3 * eBack(x, 2.4)})`;
+  });
+}
+function tc(sec) {
+  const f = Math.floor(sec * 24) % 24, s = Math.floor(sec) % 60, m = Math.floor(sec / 60);
+  return `00:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}:${String(f).padStart(2, '0')}`;
+}
+
+// ---- end-card web (curved rings like the app background) + network around the logo
+const WC = [600, 540], SPOKES = 16, RINGS = [190, 300, 420, 560, 720, 900, 1100, 1320];
+const NODES = [[-58, 300, 30], [-12, 305, 22], [32, 290, 28], [118, 300, 24], [160, 285, 30], [205, 300, 22], [250, 292, 26]];
+(function buildWeb() {
+  const svg = $('web'); let h = '';
+  for (let k = 0; k < SPOKES; k++) {
+    const a = k / SPOKES * Math.PI * 2;
+    h += `<line class="sp" x1="${WC[0]}" y1="${WC[1]}" x2="${WC[0] + Math.cos(a) * 1500}" y2="${WC[1] + Math.sin(a) * 1500}"/>`;
+  }
+  RINGS.forEach(r => {
+    let d = '';
+    for (let k = 0; k <= SPOKES; k++) {
+      const a = k / SPOKES * Math.PI * 2, am = (k - .5) / SPOKES * Math.PI * 2;
+      const x = WC[0] + Math.cos(a) * r, y = WC[1] + Math.sin(a) * r;
+      if (!k) d += `M${x},${y}`;
+      else d += `Q${WC[0] + Math.cos(am) * r * .9},${WC[1] + Math.sin(am) * r * .9} ${x},${y}`;
+    }
+    h += `<path class="rg" d="${d}" pathLength="1"/>`;
+  });
+  h += `<circle class="orb" cx="${WC[0]}" cy="${WC[1]}" r="300"/>`;
+  NODES.forEach(([deg, r, s], i) => {
+    const a = deg * Math.PI / 180, x = WC[0] + Math.cos(a) * r, y = WC[1] + Math.sin(a) * r;
+    h += `<line class="ln" x1="${WC[0]}" y1="${WC[1]}" x2="${x}" y2="${y}"/>`;
+    h += `<g class="nd" transform="translate(${x},${y})"><circle r="${s}"/></g>`;
+  });
+  svg.innerHTML = h;
+  svg.querySelectorAll('.sp').forEach(e => Object.assign(e.style, { stroke: 'rgba(120,175,172,.13)', strokeWidth: 2 }));
+  svg.querySelectorAll('.rg').forEach(e => Object.assign(e.style, { stroke: 'rgba(120,175,172,.13)', strokeWidth: 2, fill: 'none', strokeDasharray: 1 }));
+  Object.assign(svg.querySelector('.orb').style, { stroke: 'rgba(255,255,255,.28)', strokeWidth: 2.5, fill: 'none', strokeDasharray: '6 12' });
+  svg.querySelectorAll('.ln').forEach(e => Object.assign(e.style, { stroke: 'var(--gold)', strokeWidth: 7, strokeDasharray: '26 16', strokeLinecap: 'round' }));
+  svg.querySelectorAll('.nd circle').forEach(e => Object.assign(e.style, { fill: 'var(--node)', stroke: 'var(--gold)', strokeWidth: 4 }));
+})();
+
+// polygon of the screen clipped to lo <= x - y <= hi
+function band(lo, hi) {
+  let pts = [[0, 0], [1920, 0], [1920, 1080], [0, 1080]];
+  const clip = (pts, f) => {   // keep f(p) >= 0
+    const out = [];
+    for (let i = 0; i < pts.length; i++) {
+      const a = pts[i], b = pts[(i + 1) % pts.length], fa = f(a), fb = f(b);
+      if (fa >= 0) out.push(a);
+      if ((fa >= 0) !== (fb >= 0)) { const k = fa / (fa - fb); out.push([a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k]); }
+    }
+    return out;
+  };
+  pts = clip(pts, p => p[0] - p[1] - lo);
+  pts = clip(pts, p => hi - (p[0] - p[1]));
+  return pts;
+}
+
+window.render = function (t) {
+  caps(t);
+  let e;
+  if (window.renderCards) window.renderCards(t);
+
+  e = E.rec;
+  if (e) { const a = eOut(pr(t, e.t_in, .35)), b = eIn(pr(t, e.t_out, .25)), el = $('rec');
+    vis(el, a * (1 - b)); el.style.transform = `scale(${1.06 - .06 * a})`;
+    el.querySelector('.dot').style.opacity = ((t - e.t_in) % 1) < .6 ? 1 : .15;
+    el.querySelector('.tc').textContent = tc(Math.max(0, t)); }
+
+  e = E.cta;
+  if (e) {
+  slide($('cta'), t, e.t_in, e.t_out);
+  { const btn = $('btn'), cur = $('cursor'), rip = $('ripple');
+    const bx = 310, by = 206;
+    const m = eIO(pr(t, e.t_cursor, e.t_click - e.t_cursor - .08));
+    const cx = bx + 40 + (1 - m) * 260, cy = by + 6 + (1 - m) * 230;
+    const press = t >= e.t_click - .08 && t < e.t_click + .12;
+    vis(cur, clamp((t - e.t_cursor) / .15) * (1 - pr(t, e.t_click + .7, .25)));
+    cur.style.left = cx + 'px'; cur.style.top = cy + 'px';
+    cur.style.transform = `scale(${press ? .84 : 1})`; cur.style.transformOrigin = '10% 10%';
+    btn.style.transform = `scale(${press ? .95 : 1})`;
+    const on = t >= e.t_click;
+    btn.querySelector('.off').style.opacity = on ? 0 : 1;
+    btn.querySelector('.on').style.opacity = on ? 1 : 0;
+    btn.style.background = on ? 'var(--teal)' : 'var(--gold)';
+    const rx = pr(t, e.t_click, .5);
+    vis(rip, rx > 0 && rx < 1 ? 1 - rx : 0);
+    rip.style.left = (bx + 44) + 'px'; rip.style.top = (by + 10) + 'px';
+    rip.style.transform = `scale(${1 + 3.2 * eOut(rx)})`; }
+  if (e.t_chip) pop($('ctachip'), t, e.t_chip, e.t_out);
+  }
+
+  // ---- end: Mauritius-flag stripes sweep (logo motif), then the MaToile end card
+  e = E.end;
+  { const BW = 300, s = eIO(pr(t, e.t_in, .8)), L = 1920 - s * (1920 + 1080 + 4 * BW);
+    const wipe = $('wipe'), on = t >= e.t_in && L + 4 * BW > -1080;
+    wipe.classList.toggle('hide', !on);
+    const cols = ['var(--grn)', 'var(--yel)', 'var(--blue)', 'var(--red)'];
+    wipe.querySelectorAll('polygon').forEach((pg, k) => {
+      pg.setAttribute('points', band(L + k * BW, L + (k + 1) * BW + 1).map(p => p.join(',')).join(' '));
+      pg.style.fill = cols[k];
+    });
+    const endEl = $('end');
+    endEl.classList.toggle('hide', !(t >= e.t_in && L + 4 * BW < 1920));
+    endEl.style.clipPath = `polygon(${band(L + 4 * BW, 99999).map(p => p[0] + 'px ' + p[1] + 'px').join(',')})`;
+    const t0 = e.t_in + .35;                     // content starts while the stripes are still passing
+    const web = $('web');
+    web.style.transform = `rotate(${(1 - eOut(pr(t, t0, 2.5))) * -8}deg)`; web.style.transformOrigin = '600px 540px';
+    web.querySelectorAll('.rg').forEach((r, i) => r.style.strokeDashoffset = 1 - eOut(pr(t, t0 + i * .05, .7)));
+    web.querySelectorAll('.sp').forEach(r => r.style.opacity = eOut(pr(t, t0, .6)));
+    web.querySelector('.orb').style.opacity = eOut(pr(t, t0 + .3, .5));
+    const lns = web.querySelectorAll('.ln'), nds = web.querySelectorAll('.nd');
+    lns.forEach((ln, i) => {
+      const x = eOut(pr(t, t0 + .45 + i * .06, .35)), [deg, r] = NODES[i], a = deg * Math.PI / 180;
+      ln.setAttribute('x2', WC[0] + Math.cos(a) * r * x); ln.setAttribute('y2', WC[1] + Math.sin(a) * r * x);
+      ln.style.opacity = x > 0 ? 1 : 0;
+      const nx = pr(t, t0 + .7 + i * .06, .3);
+      nds[i].firstChild.style.transform = `scale(${eBack(nx)})`; nds[i].style.opacity = nx > 0 ? 1 : 0;
+    });
+    const lg = $('end').querySelector('.lg'), lx = pr(t, t0 + .1, .55);
+    lg.style.transform = `scale(${.2 + .8 * eBack(lx, 1.6)}) rotate(${(1 - eOut(lx)) * -20}deg)`; lg.style.opacity = clamp(lx * 4);
+    const tx = $('end').querySelector('.txt');
+    const lab = tx.querySelector('.lab'), la = pr(t, t0 + .35, .35);
+    lab.style.opacity = eOut(la); lab.style.transform = `translateX(${(1 - eOut(la)) * 40}px)`;
+    const big = tx.querySelector('.big span'), bx = eOut(pr(t, t0 + .42, .5));
+    big.style.transform = `translateY(${(1 - bx) * 105}%)`;
+    tx.querySelector('.stripes').style.transform = `skewX(-35deg) scaleX(${eIO(pr(t, t0 + .65, .5))})`;
+    const who = tx.querySelector('.who'), wx = pr(t, t0 + .8, .4);
+    who.style.opacity = eOut(wx); who.style.transform = `translateY(${(1 - eOut(wx)) * 26}px)`;
+    const pill = tx.querySelector('.pill'), px = pr(t, t0 + 1.0, .4);
+    pill.style.opacity = clamp(px * 3); pill.style.transform = `scale(${.5 + .5 * eBack(px)})`; pill.style.transformOrigin = 'left center';
+    vis($('black'), eIO(pr(t, e.t_out - .45, .45))); }
+};
+window.ready = document.fonts.ready.then(() => Promise.all(
+  ['900 64px I', '800 40px I', '700 40px I', '600 20px I', '500 20px I'].map(f => document.fonts.load(f, 'Aé’'))))
+  .then(() => Promise.all(['logo_matoile.png', 'avatar.jpg'].map(src => new Promise(r => { const im = new Image(); im.onload = r; im.src = src; }))))
+  .then(() => { if (window.cardsReady) window.cardsReady(); });
+</script>
+<script src="cards.js"></script>
+</body></html>
