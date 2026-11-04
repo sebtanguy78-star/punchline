@@ -22,7 +22,8 @@ l'exemple complet `examples/sebastien/` (config + cartes de la vidéo validée).
   gros titre « qui tombe » pour un nom de marque/chaîne, CTA « Ajouter à ma toile » avec clic, écran de fin MaToile.
 - Charte MaToile stricte : bleu-vert foncé, turquoise `#4FC9C2`, or `#E2B65C`, drapeau mauricien en accent.
 - Son plus fort sans saturer : -12 LUFS, crête ≤ -1,5 dBTP. Bruitages discrets.
-- Livraison : master 1080p + **720p ~7 Mo (recommandé)** + 720p léger ~5 Mo.
+- Livraison (préférence actuelle) : **720p qualité max sous 15 Mo** (`_720p_HQ`, ~14,5 Mo, deux passes) — c'est le
+  fichier à envoyer. Si demandé : 1080p sous 15 Mo (même méthode, sans `scale`), 720p CRF 24 / CRF 26 plus légers.
 
 ## Pipeline
 Variables : `SK` = dossier de ce skill, `W` = dossier de travail (scratchpad), `V` = vidéo de l'utilisateur.
@@ -49,11 +50,12 @@ Le rendu complet prend ~6 min pour 50 s de vidéo ; donne des nouvelles à l'uti
 9. **Rendu complet** (en parallèle) : `bash $SK/scripts/render_all.sh $W` et
    `$W/venv/bin/python -I $SK/scripts/audio.py $W`, puis
    `$W/venv/bin/python -I $SK/scripts/compose.py $W full $W/<Nom>_MaToile_master.mp4`.
-10. **Exports** : `bash $SK/scripts/export.sh $W/<Nom>_MaToile_master.mp4 $W/<Nom>_MaToile`.
+10. **Exports** : `bash $SK/scripts/export.sh $W/<Nom>_MaToile_master.mp4 $W/<Nom>_MaToile` → `_720p_HQ` (≤ 15 Mo,
+    qualité max), `_720p` (CRF 24), `_720p_leger` (CRF 26).
 11. **Vérifier** : `ffprobe` (1920×1080 / 1280×720, durée), loudness
     (`ffmpeg -i f.mp4 -af ebur128=peak=true -f null -` → I ≈ -12 LUFS, Peak ≤ -1,5), et quelques images extraites
     du fichier final. N'annonce que ce que tu as vérifié ; tu ne peux pas écouter : dis-le pour les bruitages.
-12. **Livrer** avec SendUserFile : le 720p recommandé (et le léger), le master si demandé. Message court en
+12. **Livrer** avec SendUserFile : le `_720p_HQ` (les autres seulement si demandés). Message court en
     français : ce qui a été fait, mots à vérifier (orthographe des noms), proposition de version 9:16.
 
 ## Écrire le contenu (la partie qui demande du jugement)
@@ -81,6 +83,12 @@ chiffre ou lieu prononcé, une chip qui pop **au moment exact du mot** (prends l
   lucide.dev ; `{{web}}` = icône toile MaToile) et positions `top`. Chaque bloc de `renderCards` suit le même
   schéma : `slide()` pour la carte, `pop()` pour chaque chip, avec les noms d'événements de la config.
   Les ids HTML doivent être uniques ; garde les chips d'une même carte espacées de ~94 px en `top`.
+
+## Même prise renvoyée en meilleure qualité
+Si les pauses d'une nouvelle vidéo tombent aux mêmes endroits qu'une vidéo déjà montée (décalage constant), c'est la
+même prise ré-exportée : mesure le décalage exact par corrélation de l'enveloppe audio (numpy), reprends la config et
+les cartes de l'ancienne en décalant tous les temps, puis refais `CHUNKS` (Whisper change parfois virgules et petits
+mots, ex. « de » entendu « 2 »). Mets `avatar_t` dans la durée de la nouvelle source et adapte `avatar_crop` à sa taille.
 
 ## Pièges déjà rencontrés
 - PyAV récent casse `faster_whisper.decode_audio` (`metadata_errors`) : `transcribe.py` décode avec ffmpeg et passe un
