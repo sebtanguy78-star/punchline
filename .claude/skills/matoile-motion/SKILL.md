@@ -20,6 +20,11 @@ l'exemple complet `examples/sebastien/` (config + cartes de la vidéo validée).
 - Cartes infos à droite, synchronisées sur les mots : nom + lieu, puis une carte par idée (chips sur les noms
   concrets, chiffres, lieux), viseur REC si la personne parle du tournage, carte MaToile quand elle cite MaToile,
   gros titre « qui tombe » pour un nom de marque/chaîne, CTA « Ajouter à ma toile » avec clic, écran de fin MaToile.
+- **La vidéo s'affiche en tête de fiche MaToile** (appli mobile) : l'appli rogne ~62 px de chaque côté et pose une
+  flèche retour (haut gauche), un bouton « … » (haut droite) et la photo de profil ronde (bas gauche) par-dessus.
+  Aucune animation ni sous-titre ne doit tomber dessous : c'est le rôle du layout `matoile_profile` (défaut) —
+  colonne de cartes descendue (top +160) et réduite (×0,85), sous-titres à 250 px du bas, viseur REC resserré avec
+  « ● REC » + chrono du côté opposé aux cartes. Vérifie avec `safe_check.py` (étape 8).
 - Charte MaToile stricte : bleu-vert foncé, turquoise `#4FC9C2`, or `#E2B65C`, drapeau mauricien en accent.
 - Son plus fort sans saturer : -12 LUFS, crête ≤ -1,5 dBTP. Bruitages discrets.
 - Livraison (préférence actuelle) : **720p qualité max sous 15 Mo** (`_720p_HQ`, ~14,5 Mo, deux passes) — c'est le
@@ -46,7 +51,9 @@ Le rendu complet prend ~6 min pour 50 s de vidéo ; donne des nouvelles à l'uti
 7. **Calque** : `python3 $SK/scripts/build_overlay.py $W $W/cards` (assemble le HTML, icônes, avatar).
 8. **Aperçu** : `bash $SK/scripts/preview.sh $W 3.2,10.5,24.9,32.6,43.6,47.5` (temps de SORTIE, en secondes,
    un par carte importante + fin) puis **regarde `$W/test/sheet.jpg`** : rien sur le visage, textes lisibles,
-   icônes complètes, pas de chevauchement. Corrige et recommence tant que ce n'est pas propre.
+   icônes complètes, pas de chevauchement. Puis `$W/venv/bin/python -I $SK/scripts/safe_check.py $W <mêmes temps>`
+   → `$W/test/sheet_safe.jpg` : les zones rouges = ce que l'appli MaToile cache ; rien d'important ne doit y être.
+   Corrige et recommence tant que ce n'est pas propre.
 9. **Rendu complet** (en parallèle) : `bash $SK/scripts/render_all.sh $W` et
    `$W/venv/bin/python -I $SK/scripts/audio.py $W`, puis
    `$W/venv/bin/python -I $SK/scripts/compose.py $W full $W/<Nom>_MaToile_master.mp4`.
@@ -72,7 +79,8 @@ chiffre ou lieu prononcé, une chip qui pop **au moment exact du mot** (prends l
   « ajoutez-moi / n'hésitez pas » avec `t_click` sur le mot « toile ». `END_AT` juste après le dernier mot.
 - `BUMPS` : 4-5 mots forts. `HIDE_CAPS` : pendant un gros titre (`.tape`).
 - `PROFILE` : prénom, lieu (« Ville · Île Maurice »), `avatar_t` + `avatar_crop` (`w:h:x:y` carré autour du visage
-  en pixels source — vérifie l'image `$W/render/avatar.jpg`), `cap_bottom` 190, et **`panel_side`** :
+  en pixels source — vérifie l'image `$W/render/avatar.jpg`), `layout` (`"matoile_profile"` par défaut ; `"full"`
+  pour une vidéo vue en plein écran ailleurs : cartes en haut, sous-titres à 190 px), et **`panel_side`** :
   `"right"` (défaut, colonne de cartes à x=1160) si le visage est à gauche/centre-gauche, `"left"` (x=70, les cartes
   glissent depuis la gauche) si le visage est au centre ou à droite. Règle : en 1920 px de large, le bord du visage
   sur le plan serré ne doit jamais toucher la colonne (≥ 40 px d'écart). Vidéo 2 (visage à x≈0,55) → `"left"`.

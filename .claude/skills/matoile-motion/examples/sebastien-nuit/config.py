@@ -55,6 +55,6 @@ PROFILE = dict(
     place="Grand Baie · Île Maurice",
     cta_chip="À bientôt sur MaToile !",
     avatar_t=52.0, avatar_crop="200:200:290:20",
-    cap_bottom=190,
+    layout="matoile_profile",   # vidéo en tête de fiche MaToile : animations hors des boutons et de la photo
     panel_side="left",           # visage au centre-droit -> cartes à gauche
 )

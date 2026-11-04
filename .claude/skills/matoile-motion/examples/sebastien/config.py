@@ -54,5 +54,5 @@ PROFILE = dict(
     place="Grand Baie · Île Maurice",
     cta_chip="Au plaisir de discuter !",
     avatar_t=49.5, avatar_crop="330:330:337:62",   # smiling frame; crop=w:h:x:y in source pixels
-    cap_bottom=190,              # caption baseline height (px from bottom of 1080). 112 was judged too low.
+    layout="matoile_profile",   # vidéo en tête de fiche MaToile : animations hors des boutons et de la photo
 )

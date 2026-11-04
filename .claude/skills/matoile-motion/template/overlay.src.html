@@ -32,7 +32,7 @@ body{font-family:I,'Noto Color Emoji',sans-serif;color:#fff;position:relative}
 #cap .w.k{color:var(--gold)}
 
 /* ---------- right panel ---------- */
-.panel{position:absolute;left:{{PANEL_LEFT}}px;top:0;width:690px}
+.panel{position:absolute;left:{{PANEL_LEFT}}px;top:{{PANEL_TOP}}px;width:690px;transform:scale({{PANEL_SCALE}});transform-origin:0 0}
 .card{position:absolute;left:0;background:var(--card);border:1.5px solid rgba(79,201,194,.22);border-radius:28px;
   padding:26px 34px 28px 28px;box-shadow:0 26px 60px rgba(0,0,0,.35);display:flex;gap:22px;align-items:center;max-width:690px}
 .card .bar{position:absolute;left:-1px;top:22px;bottom:22px;width:7px;border-radius:0 6px 6px 0;background:var(--gold);transform-origin:top}
@@ -66,14 +66,14 @@ body{font-family:I,'Noto Color Emoji',sans-serif;color:#fff;position:relative}
 .tape.y{background:var(--gold);color:var(--bg);border-color:var(--gold)}
 
 #rec .cn{position:absolute;width:96px;height:96px;border:7px solid #fff;filter:drop-shadow(0 2px 6px rgba(0,0,0,.45))}
-#rec .tl{left:56px;top:56px;border-right:none;border-bottom:none;border-radius:18px 0 0 0}
-#rec .tr{right:56px;top:56px;border-left:none;border-bottom:none;border-radius:0 18px 0 0}
-#rec .bl{left:56px;bottom:56px;border-right:none;border-top:none;border-radius:0 0 0 18px}
-#rec .br{right:56px;bottom:56px;border-left:none;border-top:none;border-radius:0 0 18px 0}
-#rec .lbl{position:absolute;top:86px;left:96px;font-weight:800;font-size:34px;letter-spacing:.08em;display:flex;align-items:center;gap:14px;
+#rec .tl{left:0;top:0;border-right:none;border-bottom:none;border-radius:18px 0 0 0}
+#rec .tr{right:0;top:0;border-left:none;border-bottom:none;border-radius:0 18px 0 0}
+#rec .bl{left:0;bottom:0;border-right:none;border-top:none;border-radius:0 0 0 18px}
+#rec .br{right:0;bottom:0;border-left:none;border-top:none;border-radius:0 0 18px 0}
+#rec .lbl{position:absolute;top:30px;left:40px;font-weight:800;font-size:34px;letter-spacing:.08em;display:flex;align-items:center;gap:14px;
   text-shadow:0 2px 10px rgba(0,0,0,.6)}
 #rec .dot{width:26px;height:26px;border-radius:50%;background:var(--red);box-shadow:0 0 18px rgba(234,40,57,.8)}
-#rec .tc{position:absolute;top:86px;right:96px;font-weight:700;font-size:34px;letter-spacing:.04em;font-variant-numeric:tabular-nums;
+#rec .tc{position:absolute;top:30px;right:40px;font-weight:700;font-size:34px;letter-spacing:.04em;font-variant-numeric:tabular-nums;
   text-shadow:0 2px 10px rgba(0,0,0,.6)}
 
 /* MaToile card */
@@ -115,10 +115,10 @@ body{font-family:I,'Noto Color Emoji',sans-serif;color:#fff;position:relative}
 </style></head>
 <body>
 
-<div id="rec" class="abs hide" style="inset:0">
+<div id="rec" class="abs hide" style="left:{{REC_X}}px;right:{{REC_X}}px;top:{{REC_TOP}}px;bottom:{{REC_BOTTOM}}px">
   <div class="cn tl"></div><div class="cn tr"></div><div class="cn bl"></div><div class="cn br"></div>
-  <div class="lbl"><div class="dot"></div>REC</div>
-  <div class="tc">00:00:00:00</div>
+  <div class="lbl" style="{{REC_LBL}}"><div class="dot"></div>REC</div>
+  <div class="tc" style="{{REC_TC}}">00:00:00:00</div>
 </div>
 
 <div class="panel">

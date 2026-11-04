@@ -28,7 +28,11 @@ labels Inter 700 21 px capitales espacées turquoise, chips Inter 700 33 px.
   opposé au visage : à droite (`left:1160px`, défaut) si la personne est à gauche/centre-gauche, à gauche
   (`PROFILE["panel_side"] = "left"`, `left:70px`) si elle est au centre/à droite. Ne jamais couvrir le visage.
   Les cartes et les souffles audio arrivent du côté de la colonne.
-- **Sous-titres centrés en bas à `cap_bottom` = 190 px** (112 px a été jugé trop bas). Réglable dans `PROFILE`.
+- **Sous-titres centrés en bas** : 250 px du bas en layout `matoile_profile` (au-dessus de la photo de profil de
+  l'appli), 190 px en layout `full` (112 px a été jugé trop bas).
+- **Zones masquées par la fiche MaToile** (layout `matoile_profile`, coordonnées vidéo 1920×1080) : bords x<62 et
+  x>1858 rognés ; flèche retour cercle (212,152) r≈107 ; bouton « … » (1687,152) r≈107 ; photo de profil (403,1060)
+  r≈240. La colonne de cartes démarre donc à y≈290 (top 160 + ×0,85) et finit avant y≈820.
 - Une seule « idée » à l'écran à la fois : la carte précédente sort quand la suivante entre.
 
 ## Composants (classes du template)
