@@ -21,6 +21,11 @@ Vérification : `python3.13 --version && node --version && ffmpeg -version | hea
 versions. Si Homebrew dit qu'un autre `brew install` « has already locked » un dossier : un autre brew tourne encore
 (regarde avec `pgrep -fl brew`), attends qu'il finisse ou ferme la fenêtre du Terminal où il tourne, puis relance.
 
+**Mac Intel (Homebrew affiche « Tier 3 »)** : Homebrew n'a pas toujours de version toute prête pour ces Mac et doit
+alors tout compiler, ce qui peut prendre très longtemps (Node.js : jusqu'à une heure ou plus). Pour Node, le plus
+rapide est l'installateur officiel : https://nodejs.org → version **LTS** → « macOS Installer (.pkg) ». Il installe
+`node` et `npm`, c'est tout ce dont le skill a besoin.
+
 (Python 3.13 précisément : avec la toute dernière version, la transcription ne s'installe pas sur les Mac Intel.)
 
 ## 2. Installer le skill
