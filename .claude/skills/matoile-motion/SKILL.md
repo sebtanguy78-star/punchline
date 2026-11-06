@@ -34,7 +34,7 @@ l'exemple complet `examples/sebastien/` (config + cartes de la vidéo validée).
 - **Sur le Mac de l'utilisateur (session locale Claude Code)** — cas principal. `SK` = dossier de ce skill
   (`~/.claude/skills/matoile-motion`), `W` = `~/Movies/MaToile/<nom-de-la-video>` (un dossier par vidéo, hors du
   skill), `V` = chemin de la vidéo (souvent glissée dans le terminal : **mets toujours les chemins entre guillemets**,
-  ils contiennent souvent des espaces). Prérequis : Homebrew + `brew install ffmpeg node python@3.13` (voir
+  ils contiennent souvent des espaces). Prérequis : Homebrew + `brew install python@3.13`, `brew install node`, `brew install ffmpeg`, un par un (voir
   `INSTALLATION_MAC.md`) ; `setup.sh` vérifie et dit quoi installer s'il manque quelque chose.
   Vidéo d'iPhone en **HDR** (`ffprobe` : `color_transfer=arib-std-b67` ou `smpte2084`) : convertis-la d'abord en SDR,
   sinon les couleurs sortent délavées : `ffmpeg -i "$V" -vf "zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,`

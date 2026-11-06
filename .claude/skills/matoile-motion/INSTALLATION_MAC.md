@@ -10,9 +10,16 @@ Ouvre le Terminal et colle :
 # Homebrew (si tu ne l'as pas déjà) : https://brew.sh
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-# les outils utilisés par le skill
-brew install ffmpeg node python@3.13
+# les outils utilisés par le skill : un par un (plusieurs à la fois peut bloquer Homebrew)
+brew update
+brew install python@3.13
+brew install node
+brew install ffmpeg
 ```
+
+Vérification : `python3.13 --version && node --version && ffmpeg -version | head -1` doit afficher les trois
+versions. Si Homebrew dit qu'un autre `brew install` « has already locked » un dossier : un autre brew tourne encore
+(regarde avec `pgrep -fl brew`), attends qu'il finisse ou ferme la fenêtre du Terminal où il tourne, puis relance.
 
 (Python 3.13 précisément : avec la toute dernière version, la transcription ne s'installe pas sur les Mac Intel.)
 
