@@ -7,7 +7,7 @@ import json, runpy, subprocess, sys
 from fractions import Fraction
 
 cfg = runpy.run_path(sys.argv[1])
-tr = json.load(open(sys.argv[2]))
+tr = json.load(open(sys.argv[2], encoding="utf-8"))
 work = sys.argv[3]
 
 SRC = cfg["SRC"]
@@ -118,8 +118,8 @@ bumps = [round(m(t), 3) for t in cfg.get("BUMPS", [])]
 plan = dict(src=SRC, src_w=SRC_W, src_h=SRC_H, fps=FPS, out_frames=len(frames), out_dur=OUT_DUR, focus=FOCUS,
             frames=frames, segs=[dict(o0=o0, f0=f0, f1=f1) for o0, f0, f1 in seg_out], words=words, caps=cap,
             events=events, bumps=bumps, profile=cfg["PROFILE"])
-json.dump(plan, open(f"{work}/plan.json", "w"), ensure_ascii=False)
-open(f"{work}/plan.js", "w").write("window.PLAN=" + json.dumps(plan, ensure_ascii=False) + ";")
+json.dump(plan, open(f"{work}/plan.json", "w", encoding="utf-8"), ensure_ascii=False)
+open(f"{work}/plan.js", "w", encoding="utf-8").write("window.PLAN=" + json.dumps(plan, ensure_ascii=False) + ";")
 print(f"source {SRC_W}x{SRC_H} {FPS}fps {SRC_FRAMES} frames -> output {len(frames)} frames, {OUT_DUR:.2f}s")
 for c in cap:
     flag = "  <-- short" if c["e"] - c["s"] < 0.45 else ""

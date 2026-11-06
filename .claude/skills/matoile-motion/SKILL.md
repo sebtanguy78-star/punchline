@@ -16,7 +16,7 @@ l'exemple complet `examples/sebastien/` (config + cartes de la vidéo validée).
 ## Ce que l'utilisateur attend (résultat validé)
 - Rythme : blancs coupés, alternance plan large / plan serré à chaque coupe, petits « punch » de zoom sur les mots forts.
 - Sous-titres mot à mot (pop), Inter 800 casse normale, mots-clés en or, **placés plus haut qu'à l'origine**
-  (`cap_bottom` 190 px — demande explicite de l'utilisateur).
+  (demande explicite : 250 px du bas en layout fiche MaToile, 190 px en plein écran).
 - Cartes infos à droite, synchronisées sur les mots : nom + lieu, puis une carte par idée (chips sur les noms
   concrets, chiffres, lieux), viseur REC si la personne parle du tournage, carte MaToile quand elle cite MaToile,
   gros titre « qui tombe » pour un nom de marque/chaîne, CTA « Ajouter à ma toile » avec clic, écran de fin MaToile.
@@ -30,8 +30,19 @@ l'exemple complet `examples/sebastien/` (config + cartes de la vidéo validée).
 - Livraison (préférence actuelle) : **720p qualité max sous 15 Mo** (`_720p_HQ`, ~14,5 Mo, deux passes) — c'est le
   fichier à envoyer. Si demandé : 1080p sous 15 Mo (même méthode, sans `scale`), 720p CRF 24 / CRF 26 plus légers.
 
+## Où ça tourne
+- **Sur le Mac de l'utilisateur (session locale Claude Code)** — cas principal. `SK` = dossier de ce skill
+  (`~/.claude/skills/matoile-motion`), `W` = `~/Movies/MaToile/<nom-de-la-video>` (un dossier par vidéo, hors du
+  skill), `V` = chemin de la vidéo (souvent glissée dans le terminal : **mets toujours les chemins entre guillemets**,
+  ils contiennent souvent des espaces). Prérequis : Homebrew + `brew install ffmpeg node python` (voir
+  `INSTALLATION_MAC.md`) ; `setup.sh` vérifie et dit quoi installer s'il manque quelque chose.
+  Vidéo d'iPhone en **HDR** (`ffprobe` : `color_transfer=arib-std-b67` ou `smpte2084`) : convertis-la d'abord en SDR,
+  sinon les couleurs sortent délavées : `ffmpeg -i "$V" -vf "zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,`
+  `tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,format=yuv420p" -c:v libx264 -crf 16 -c:a copy "$W/source_sdr.mp4"`
+  puis utilise ce fichier comme `V` (ou demande à l'utilisateur un export « Le plus compatible »).
+- **Dans une session cloud** : `W` = un dossier du scratchpad, livraison avec SendUserFile.
+
 ## Pipeline
-Variables : `SK` = dossier de ce skill, `W` = dossier de travail (scratchpad), `V` = vidéo de l'utilisateur.
 Le rendu complet prend ~6 min pour 50 s de vidéo ; donne des nouvelles à l'utilisateur entre les étapes.
 
 1. **Préparer** : `bash $SK/scripts/setup.sh $W` (venv Whisper/Pillow, polices Inter, icônes Lucide, Playwright).
@@ -62,7 +73,8 @@ Le rendu complet prend ~6 min pour 50 s de vidéo ; donne des nouvelles à l'uti
 11. **Vérifier** : `ffprobe` (1920×1080 / 1280×720, durée), loudness
     (`ffmpeg -i f.mp4 -af ebur128=peak=true -f null -` → I ≈ -12 LUFS, Peak ≤ -1,5), et quelques images extraites
     du fichier final. N'annonce que ce que tu as vérifié ; tu ne peux pas écouter : dis-le pour les bruitages.
-12. **Livrer** avec SendUserFile : le `_720p_HQ` (les autres seulement si demandés). Message court en
+12. **Livrer** : le `_720p_HQ` (les autres seulement si demandés). Sur Mac : donne le chemin complet et montre-le
+    dans le Finder (`open -R "$W/<Nom>_MaToile_720p_HQ.mp4"`). Dans le cloud : SendUserFile. Message court en
     français : ce qui a été fait, mots à vérifier (orthographe des noms), proposition de version 9:16.
 
 ## Écrire le contenu (la partie qui demande du jugement)
@@ -110,6 +122,7 @@ mots, ex. « de » entendu « 2 »). Mets `avatar_t` dans la durée de la nouvel
 - Ne pas publier la vidéo dans le dépôt Git d'un site (fichier lourd, déployé publiquement) : livrer le fichier.
 
 ## Fichiers
+- `INSTALLATION_MAC.md` : guide d'installation pour l'utilisateur (prérequis Homebrew, où copier le skill).
 - `scripts/` : `setup.sh`, `transcribe.py`, `pauses.py`, `plan.py`, `build_overlay.py`, `render.js`,
   `render_all.sh`, `preview.sh`, `audio.py`, `compose.py`, `export.sh`.
 - `template/overlay.src.html` : charte + composants génériques (sous-titres, REC, CTA, volet drapeau, écran de fin).

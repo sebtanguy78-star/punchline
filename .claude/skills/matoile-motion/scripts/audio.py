@@ -1,12 +1,12 @@
 """Audio: splice the voice on the same frame grid as the picture, clean + make it loud (-12 LUFS) without
 saturation (true-peak safe limiter), add subtle synthetic SFX synced to the overlay events.
 usage: python -I audio.py <workdir>        -> <workdir>/voice_mix.wav"""
-import json, subprocess, sys, re
+import json, os, subprocess, sys, re
 import numpy as np
 
 SR = 48000
 WORK = sys.argv[1]
-plan = json.load(open(f"{WORK}/plan.json"))
+plan = json.load(open(f"{WORK}/plan.json", encoding="utf-8"))
 SRC, fps = plan["src"], plan["fps"]
 spf = SR // fps  # samples per frame (2000 at 24 fps)
 work = f"{WORK}/audio_tmp"
@@ -41,7 +41,7 @@ def ff(inp, out, af):
 # --- voice chain: high-pass, compression, two-pass loudnorm to -12 LUFS (validated: loud, no saturation)
 voice.tofile(work + "_v.raw")
 pre = "highpass=f=75,acompressor=threshold=-24dB:ratio=3:attack=6:release=150:makeup=3"
-st = ff(work + "_v.raw", "/dev/null", pre + ",loudnorm=I=-12:TP=-2:LRA=7:print_format=json")
+st = ff(work + "_v.raw", os.devnull, pre + ",loudnorm=I=-12:TP=-2:LRA=7:print_format=json")
 m = json.loads(re.search(r"\{[^{}]*\"input_i\"[^{}]*\}", st, re.S).group(0))
 ln = (f"loudnorm=I=-12:TP=-2:LRA=7:measured_I={m['input_i']}:measured_TP={m['input_tp']}:"
       f"measured_LRA={m['input_lra']}:measured_thresh={m['input_thresh']}:offset={m['target_offset']}:linear=true")

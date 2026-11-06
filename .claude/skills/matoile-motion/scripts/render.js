@@ -2,14 +2,14 @@
 // usage (run from <workdir>/render):  node render.js <outdir> <startFrame> <endFrame>
 //                                     node render.js <outdir> t=1.2,3.4      (stills named t<sec>.png)
 const { chromium } = require('playwright');
-const path = require('path'), fs = require('fs');
+const path = require('path'), fs = require('fs'), { pathToFileURL } = require('url');
 (async () => {
   const [out, a, b] = process.argv.slice(2);
   fs.mkdirSync(out, { recursive: true });
   const browser = await chromium.launch();
   const page = await browser.newPage({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1 });
   page.on('pageerror', e => { console.error('PAGEERR', e); process.exit(1); });
-  await page.goto('file://' + path.resolve('overlay.html'));
+  await page.goto(pathToFileURL(path.resolve('overlay.html')).href);  // works on Windows too
   await page.evaluate(() => window.ready);
   const fps = await page.evaluate(() => window.PLAN.fps);
   let list;

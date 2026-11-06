@@ -21,4 +21,4 @@ hq() {
   rm -f "$L"*
 }
 hq & crf 24 "${B}_720p.mp4" & crf 26 "${B}_720p_leger.mp4" & wait
-for f in "${B}_720p_HQ.mp4" "${B}_720p.mp4" "${B}_720p_leger.mp4"; do echo "$f  $(( $(stat -c %s "$f") / 1024 )) KB"; done
+for f in "${B}_720p_HQ.mp4" "${B}_720p.mp4" "${B}_720p_leger.mp4"; do echo "$f  $(( $(wc -c < "$f") / 1024 )) KB"; done   # wc: works on macOS and Linux

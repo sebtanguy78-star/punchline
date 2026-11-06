@@ -5,7 +5,7 @@ import json, math, subprocess, sys
 from PIL import Image
 
 work, mode = sys.argv[1], sys.argv[2]
-plan = json.load(open(f"{work}/plan.json"))
+plan = json.load(open(f"{work}/plan.json", encoding="utf-8"))
 SRC, W, H = plan["src"], plan["src_w"], plan["src_h"]
 OW, OH = 1920, 1080
 fps, frames, (cx, cy), bumps = plan["fps"], plan["frames"], plan["focus"], plan["bumps"]

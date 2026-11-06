@@ -6,7 +6,7 @@ import json, pathlib, re, shutil, subprocess, sys
 SK = pathlib.Path(__file__).resolve().parent.parent
 work, cards = pathlib.Path(sys.argv[1]), pathlib.Path(sys.argv[2])
 rd = work / "render"
-plan = json.load(open(work / "plan.json"))
+plan = json.load(open(work / "plan.json", encoding="utf-8"))
 prof = plan["profile"]
 # Layout presets. "matoile_profile" = the video plays as the header of a MaToile profile page (validated on the
 # user's phone screenshot): the app crops ~62 px on each side and draws a back button (top-left), a "..." button
@@ -28,8 +28,8 @@ else:
     rec_lbl = f"{other}:auto;{side}:40px;top:30px"
     rec_tc = f"{other}:auto;{side}:40px;top:82px"
 
-html = (SK / "template/overlay.src.html").read_text()
-html = html.replace("{{CARDS_HTML}}", (cards / "cards.html").read_text())
+html = (SK / "template/overlay.src.html").read_text(encoding="utf-8")
+html = html.replace("{{CARDS_HTML}}", (cards / "cards.html").read_text(encoding="utf-8"))
 for k, v in {"NAME": prof["name"], "PLACE": prof["place"], "CTA_CHIP": prof.get("cta_chip", "Au plaisir de discuter !"),
              "CAP_BOTTOM": str(L["cap_bottom"]), "PANEL_TOP": str(L["panel_top"]), "PANEL_SCALE": str(L["panel_scale"]),
              "REC_LBL": rec_lbl, "REC_TC": rec_tc, "REC_X": str(L["rec_x"]), "REC_TOP": str(L["rec_top"]), "REC_BOTTOM": str(L["rec_bottom"]),
@@ -46,7 +46,7 @@ def icon(m):  # {{map-pin}} -> inline SVG (skill icons first, then Lucide)
         f = rd / "node_modules/lucide-static/icons" / f"{name}.svg"
     if not f.exists():
         sys.exit(f"icon not found: {name} (see https://lucide.dev/icons)")
-    s = re.sub(r"<!--.*?-->", "", f.read_text(), flags=re.S)
+    s = re.sub(r"<!--.*?-->", "", f.read_text(encoding="utf-8"), flags=re.S)
     # strip size/class from the <svg> tag only (rect/circle children need their own width/height!)
     s = re.sub(r"<svg[^>]*>", lambda t: re.sub(r'\s(width|height|class)="[^"]*"', "", t.group(0)), s, count=1)
     return s.strip()
@@ -56,7 +56,7 @@ html = re.sub(r"\{\{([a-z0-9-]+)\}\}", icon, html)
 left = re.findall(r"\{\{[^}]+\}\}", html)
 if left:
     sys.exit(f"unfilled placeholders: {left}")
-(rd / "overlay.html").write_text(html)
+(rd / "overlay.html").write_text(html, encoding="utf-8")
 shutil.copy(cards / "cards.js", rd / "cards.js")
 shutil.copy(SK / "assets/logo_matoile.png", rd / "logo_matoile.png")
 shutil.copy(SK / "scripts/render.js", rd / "render.js")
