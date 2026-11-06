@@ -11,8 +11,10 @@ Ouvre le Terminal et colle :
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
 # les outils utilisés par le skill
-brew install ffmpeg node python
+brew install ffmpeg node python@3.13
 ```
+
+(Python 3.13 précisément : avec la toute dernière version, la transcription ne s'installe pas sur les Mac Intel.)
 
 ## 2. Installer le skill
 Si tu as téléchargé `matoile-motion.skill` (dans Téléchargements) :

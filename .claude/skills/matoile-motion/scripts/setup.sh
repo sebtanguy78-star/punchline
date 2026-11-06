@@ -11,13 +11,18 @@ command -v ffmpeg  >/dev/null || miss="$miss ffmpeg"
 command -v ffprobe >/dev/null || miss="$miss ffmpeg"
 command -v node    >/dev/null || miss="$miss node"
 command -v npm     >/dev/null || miss="$miss node"
-command -v python3 >/dev/null || miss="$miss python"
+# Python: prefer 3.13/3.12 (Whisper deps have wheels for every Mac; Intel Macs lack them for 3.14 as of 2026-11)
+PY=""; for v in python3.13 python3.12 python3.11 python3; do command -v $v >/dev/null && { PY=$v; break; }; done
+[ -n "$PY" ] || miss="$miss python@3.13"
 if [ -n "$miss" ]; then
   echo "Il manque :$miss  ->  installe-les avec :  $HINT$(echo "$miss" | tr ' ' '\n' | sort -u | tr '\n' ' ')"
   [ "$(uname)" = "Darwin" ] && echo "(Homebrew : https://brew.sh)"
   exit 1
 fi
-[ -x "$W/venv/bin/python" ] || python3 -m venv "$W/venv"
+if [ "$(uname)" = "Darwin" ] && [ "$(uname -m)" = "x86_64" ] && [ "$($PY -c "import sys;print(sys.version_info[1])")" -ge 14 ]; then
+  echo "Mac Intel : $PY est trop récent pour la transcription. Installe :  brew install python@3.13"; exit 1
+fi
+[ -x "$W/venv/bin/python" ] || $PY -m venv "$W/venv"
 "$W/venv/bin/python" -m pip install -q --upgrade pip
 "$W/venv/bin/python" -m pip install -q faster-whisper pillow numpy
 cd "$W/render"

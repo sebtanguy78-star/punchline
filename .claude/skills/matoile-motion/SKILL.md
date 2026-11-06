@@ -34,12 +34,20 @@ l'exemple complet `examples/sebastien/` (config + cartes de la vidéo validée).
 - **Sur le Mac de l'utilisateur (session locale Claude Code)** — cas principal. `SK` = dossier de ce skill
   (`~/.claude/skills/matoile-motion`), `W` = `~/Movies/MaToile/<nom-de-la-video>` (un dossier par vidéo, hors du
   skill), `V` = chemin de la vidéo (souvent glissée dans le terminal : **mets toujours les chemins entre guillemets**,
-  ils contiennent souvent des espaces). Prérequis : Homebrew + `brew install ffmpeg node python` (voir
+  ils contiennent souvent des espaces). Prérequis : Homebrew + `brew install ffmpeg node python@3.13` (voir
   `INSTALLATION_MAC.md`) ; `setup.sh` vérifie et dit quoi installer s'il manque quelque chose.
   Vidéo d'iPhone en **HDR** (`ffprobe` : `color_transfer=arib-std-b67` ou `smpte2084`) : convertis-la d'abord en SDR,
   sinon les couleurs sortent délavées : `ffmpeg -i "$V" -vf "zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,`
   `tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,format=yuv420p" -c:v libx264 -crf 16 -c:a copy "$W/source_sdr.mp4"`
-  puis utilise ce fichier comme `V` (ou demande à l'utilisateur un export « Le plus compatible »).
+  puis utilise ce fichier comme `V`. `zscale` vient de la bibliothèque zimg : vérifie d'abord
+  `ffmpeg -hide_banner -filters | grep zscale` ; s'il manque, demande plutôt à l'utilisateur un export SDR
+  (iPhone : Réglages › Appareil photo › Formats › « Le plus compatible », vidéo HDR désactivée).
+  **Confidentialité (demande explicite de l'utilisateur)** : en local, la vidéo reste sur son disque. Travaille
+  directement sur son chemin (`SRC` dans la config) : ne la copie pas ailleurs que dans `W`, ne l'envoie nulle part,
+  ne l'upload pas. Tout le traitement est local (ffmpeg, Whisper, Chromium). Ce qui passe par toi (le modèle), comme
+  dans toute conversation : le texte de la transcription, les infos techniques (`ffprobe`) et les petites images de
+  contrôle que tu ouvres (planche contact, `sheet.jpg`, `sheet_safe.jpg`). Si l'utilisateur ne veut aucune image
+  envoyée, n'ouvre pas ces images : ouvre-les-lui avec `open "$W/test/sheet_safe.jpg"` et demande-lui de valider.
 - **Dans une session cloud** : `W` = un dossier du scratchpad, livraison avec SendUserFile.
 
 ## Pipeline
