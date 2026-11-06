@@ -24,7 +24,13 @@ versions. Si Homebrew dit qu'un autre `brew install` « has already locked » un
 **Mac Intel (Homebrew affiche « Tier 3 »)** : Homebrew n'a pas toujours de version toute prête pour ces Mac et doit
 alors tout compiler, ce qui peut prendre très longtemps (Node.js : jusqu'à une heure ou plus). Pour Node, le plus
 rapide est l'installateur officiel : https://nodejs.org → version **LTS** → « macOS Installer (.pkg) ». Il installe
-`node` et `npm`, c'est tout ce dont le skill a besoin.
+`node` et `npm`, c'est tout ce dont le skill a besoin. Si tu télécharges l'archive (`.tar.gz`) au lieu du `.pkg` : range le dossier
+dans `~/.local/node`, puis `xattr -dr com.apple.quarantine ~/.local/node` et
+`echo 'export PATH="$HOME/.local/node/bin:$PATH"' >> ~/.zshrc`.
+
+Pour Python, même chose : l'installateur officiel évite la compilation. https://www.python.org/downloads/macos/ →
+descends jusqu'à **Python 3.13.x** (pas 3.14) → « macOS 64-bit universal2 installer » → double-clic → Installer.
+Il fournit la commande `python3.13`.
 
 (Python 3.13 précisément : avec la toute dernière version, la transcription ne s'installe pas sur les Mac Intel.)
 
